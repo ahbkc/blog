@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>{{.Title}}</title>
+    <link rel="icon" href="/img/avatar.png">
+    <link rel="stylesheet" href="/resource/plugins/layui/css/layui.css">
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo">{{.ConsoleName}}</div>
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <img src="/img/avatar.png" class="layui-nav-img">
+                {{.UserName}}
+                </a>
+            </li>
+            <li class="layui-nav-item"><a href="javascript:logout();">{{.LogoutName}}</a></li>
+        </ul>
+    </div>
+
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+            {{range $x, $y := .Menus}}
+                <li class="layui-nav-item {{$y.Class}}">
+                    <a class="" href="{{$y.Url}}">{{$y.Name}}</a>
+                </li>
+            {{else}}
+                {{end}}
+            </ul>
+        </div>
+    </div>
+
+    <div class="layui-body">
+        <div style="padding: 15px;">
+            <div id="toolbar">
+                <div style="text-align: right;">
+                    <div class="layui-btn-container">
+                        <button id="searchBtn" class="layui-btn layui-btn-primary">search</button>
+                        <button id="addBtn" class="layui-btn">add</button>
+                        <button id="exportBtn" class="layui-btn"><i class="layui-icon">&#xe601;</i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="table-show">
+                <table id="demo" lay-filter="demo" lay-data="{id: 'demo'}"></table>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-footer">
+        © ahbkc - {{.Welcome}}
+    </div>
+</div>
+<script src="/resource/plugins/layui/layui.js"></script>
+<script src="/resource/plugins/jquery/jquery-1.8.0.js"></script>
+<script src="/resource/plugins/jquery/jquery.form.min.js"></script>
+<script>
+    let $;
+    let layer;
+    var grid;
+    var selectLineData;
+    var popIndex;
+    let upload;
+    var layeditIndex;
+    layui.use(['layer', 'table', 'form', 'upload', 'layedit'], function () {
+        $ = layui.jquery;
+        layer = layui.layer;
+        let form = layui.form;
+        let table = layui.table;
+        upload = layui.upload;
+        var layedit = layui.layedit;
+        grid = table.render({
+            elem: '#demo'
+            , height: 500
+            , url: '/admin/article/list_ajax'
+            , page: true
+            , method: 'post'
+            , cols: [[
+                {type: 'checkbox'}
+                , {field: 'Id', title: 'ID', width: 300}
+                , {field: 'Title', title: 'title', width: 300}
+                , {field: 'State', title: 'state', width: 90}
+                , {field: 'UpdatedAt', title: 'lastUpdateTime', sort: true}
+                , {field: 'CreatedAt', title: 'createTime', sort: true}
+                , {fixed: 'right', width: 150, align: 'center', title: 'operation', toolbar: '#barDemo'}
+            ]]
+            , where: {
+                keyword: ""
+            }
+        });
+
+        $("#searchBtn").on("click", function () {
+            //动态插入搜索框
+            var v = $(this)
+            var rEle = v.parent().parent()
+            if (v.hasClass('layui-btn-primary')) {
+                v.removeClass('layui-btn-primary')
+                if (rEle !== undefined && rEle.length > 0) {
+                    rEle.css('display', 'inline-block')
+                    rEle.css('width', '29.8%')
+                }
+                const tp = '<div class="layui-anim layui-anim-scale" style="text-align: left;display: inline-block;width: 69.8%;">\n' +
+                        '                    <input id="searchInput" type="text" name="title" required style="width: 90%;display: inline-block" lay-verify="required" placeholder="please input categoryName、categoryDescribe、id..." autocomplete="off" class="layui-input">\n' +
+                        '                    <i id="searchIcon" class="layui-icon" style="display: inline-block;cursor: pointer;font-size: 26px;position: relative;top: 5px;right: 40px">&#xe615;</i>\n' +
+                        '                </div>';
+                $("#toolbar").prepend(tp)
+            } else {
+                v.addClass('layui-btn-primary');
+                var child = $("#toolbar").find('.layui-anim.layui-anim-scale');
+                rEle.css('display', '');
+                rEle.css('width', '');
+                child.remove()
+            }
+        });
+        table.on('tool(demo)', function (obj) {
+            var data = obj.data;
+            var layEvent = obj.event;
+            var tr = obj.tr;
+            selectLineData = data;
+
+            if (layEvent === 'detail') {
+                //show category message
+                layer.open({
+                    type: 1,
+                    skin: 'layui-layer-rim',
+                    area: ['800px', '500px'],
+                    content: getPopFormat('show', data.Title, data.Picture, data.Content)
+                });
+                form.render()
+                //构建一个默认的编辑器
+                layeditIndex = layedit.build('LAY_demo1', {
+                    hideTool: [
+                        ,'link' //超链接
+                        ,'unlink' //清除链接
+                        ,'face' //表情
+                        ,'image' //插入图片
+                    ]
+                });
+            } else if (layEvent === 'del') {
+                layer.confirm('Are you delete ?', function (index) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/admin/article/del_ajax',
+                        data: {id: data.Id},
+                        contentType: 'application/x-www-form-urlencoded',
+                        dataType: 'json',
+                        async: true,
+                        success: function (result, textStatus) {
+                            if (result.code != 100) {
+                                layer.msg(result.msg)
+                            } else if (result.code == 100) {
+                                layer.msg(result.msg, {time: 1500}, function () {
+                                    grid.reload({
+                                        page: {
+                                            curr: 1
+                                        }
+                                    });
+                                });
+                            }
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            layer.msg('{{.AJAX_ERROR_TIPS_MESSAGE}}')
+                        }
+                    });
+                });
+            } else if (layEvent === 'edit') {
+                popIndex = layer.open({
+                    type: 1,
+                    skin: 'layui-layer-rim',
+                    area: ['800px', '500px'],
+                    content: getPopFormat('edit', data.Title, data.Picture, data.Content)
+                });
+                form.render();
+
+                var upload = $("#upload")
+                if (upload !== undefined) {
+                    generalPicturePop(upload)
+                }
+
+                //构建一个默认的编辑器
+                layeditIndex = layedit.build('LAY_demo1');
+            }
+        });
+
+        form.on('submit(addForm)', function (data) {
+            $("#LAY_demo1").val(layedit.getContent(layeditIndex)); //赋值
+            $("#ajaxForm").ajaxSubmit({
+                url: '/admin/article/add_ajax',
+                type: 'post',
+                data: data.field,
+                dataType: 'json',
+                success: function (result) {
+                    //关闭layer窗口, 重加载table
+                    layer.close(popIndex);
+                    layer.msg(result.msg, {time: 1500}, function () {
+                        grid.reload({
+                            page: {
+                                curr: 1
+                            }
+                        });
+                    });
+                },
+                error: function () {
+                    layer.msg('{{.AJAX_ERROR_TIPS_MESSAGE}}')
+                }
+            });
+            return false;
+        });
+
+        form.on('submit(editForm)', function (data) {
+            // $("#LAY_demo1").val(layedit.getContent(layeditIndex)); //赋值
+            layedit.sync(layeditIndex); //同步到textarea
+            $("#Id").val(selectLineData.Id);
+            //加上判断，如果文件有改动则用multipart/form-data 方式提交表单,否则用ajax-post方式提交
+            var file = $("input.layui-upload-file");
+            if (file != undefined && file.val() != "") {
+                $("#ajaxForm").ajaxSubmit({
+                    url: '/admin/article/edit_ajax',
+                    type: 'post',
+                    dataType: 'json',
+                    success: function (result) {
+                        //关闭layer窗口, 重加载table
+                        layer.close(popIndex);
+                        layer.msg(result.msg, {time: 1500}, function () {
+                            grid.reload({
+                                page: {
+                                    curr: 1
+                                }
+                            });
+                        });
+                    },
+                    error: function () {
+                        layer.msg('{{.AJAX_ERROR_TIPS_MESSAGE}}')
+                    }
+                });
+            }else {
+                //ajax request
+                data.field.id = selectLineData.Id;
+                data.field.content = layedit.getContent(layeditIndex);
+                $.ajax({
+                    type: 'POST',
+                    url: '/admin/article/edit_ajax?flag=post',
+                    data: data.field,
+                    contentType: 'application/x-www-form-urlencoded',
+                    dataType: 'json',
+                    async: true,
+                    success: function (result, textStatus) {
+                        if (result.code != 100) {
+                            layer.msg(result.msg)
+                        } else if (result.code == 100) {
+                            layer.msg(result.msg);
+                            //关闭layer窗口, 重加载table
+                            layer.close(popIndex);
+                            layer.msg(result.msg, {time: 1500}, function () {
+                                grid.reload({
+                                    page: {
+                                        curr: 1
+                                    }
+                                });
+                            });
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        layer.msg('{{.AJAX_ERROR_TIPS_MESSAGE}}')
+                    }
+                });
+            }
+            return false;
+        });
+
+
+        $("#addBtn").on('click', function () {
+            popIndex = layer.open({
+                type: 1,
+                skin: 'layui-layer-rim',
+                area: ['800px', '500px'],
+                title: 'add article',
+                content: getPopFormat('add')
+            });
+            form.render()
+            var upload = $("#upload")
+            if (upload !== undefined) {
+                generalPicturePop(upload)
+            }
+
+            //构建一个默认的编辑器
+            layeditIndex = layedit.build('LAY_demo1');
+        });
+
+        $(document).on('click', '#searchIcon', function () {
+            var v = $("#searchInput").val();
+            if (v == undefined || v == "") {
+                v = ''
+            }
+            grid.reload({
+                where: {
+                    keyword: v
+                }
+                , page: {
+                    curr: 1
+                }
+            });
+        });
+    });
+
+    let logout = function () {
+        layer.confirm('{{.ConfirmLogoutTips}}？', {
+            btn: ['enter', 'cancel'], title: '退出确认', anim: 1, area: ['500px', '300px']
+        }, function () {
+            $.ajax({
+                type: 'POST',
+                url: '/admin/logout_ajax',
+                data: {},
+                contentType: 'application/x-www-form-urlencoded',
+                dataType: 'json',
+                async: true,
+                success: function (result, textStatus) {
+                    if (result.code != 100) {
+                        layer.msg(result.msg)
+                    } else if (result.code == 100) {
+                        layer.msg(result.msg);
+                        setTimeout(function () {
+                            window.location.href = result.data;
+                        }, 1000)
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    layer.msg('{{.AJAX_ERROR_TIPS_MESSAGE}}')
+                }
+            })
+        });
+    };
+
+    function getPopFormat(flag, Title, Picture, Content) {
+        if (Title === undefined || Picture === undefined || Content == undefined) {
+            Title = '';
+            Picture = '';
+            Content = '';
+        }
+        var appendStr = '';
+        var appendStr1 = '';
+        if (flag !== undefined && (flag == 'edit' || flag == 'add')) {
+            appendStr = '  <div class="layui-form-item">\n' +
+                    '    <div class="layui-input-block">\n' +
+                    '      <button class="layui-btn" lay-submit lay-filter="' + flag + 'Form">submit</button>\n' +
+                    '      <button type="reset" class="layui-btn layui-btn-primary">reset</button>\n' +
+                    '    </div>\n' +
+                    '  </div>\n';
+            if (flag == 'add') {
+                appendStr1 = '<i class="layui-icon" style="font-size: 50px;position: relative;left: 40%;top:30%">&#xe654</i>';
+            }else {
+                appendStr1 = '<img src= "'+Picture+'" style="width: 100%;height: 100%;" />';
+            }
+        }else {
+            appendStr1 = '<img src= "'+Picture+'" style="width: 100%;height: 100%;" />'
+        }
+        return '<form class="layui-form" id="ajaxForm" enctype="multipart/form-data" style="padding: 15px"> \n' +
+                '  <div class="layui-form-item">\n' +
+                '    <label class="layui-form-label">title</label>\n' +
+                '    <div class="layui-input-block">\n' +
+                '      <input type="text" name="title" required lay-verify="required" placeholder="please input..." autocomplete="off" class="layui-input" value="' + Title + '">\n' +
+                '    </div>\n' +
+                '  </div>\n' +
+                '  <div class="layui-form-item layui-form-text">\n' +
+                '    <label class="layui-form-label">picture</label>\n' +
+                '    <div class="layui-input-block">\n' +
+                '       <div style="width: 40%;height: 150px;border-style: dotted;cursor: pointer" id="upload">' +
+                appendStr1+
+                '       </div>' +
+                '    </div>\n' +
+                '  </div>\n' +
+                '  <div class="layui-form-item layui-form-text">\n' +
+                '    <label class="layui-form-label">content</label>\n' +
+                '    <div class="layui-input-block">\n' +
+                '      <textarea placeholder="please input..." name="content" class="layui-textarea" id="LAY_demo1" style="display: none;resize: none">' +Content+ '</textarea>\n' +
+                '    </div>\n' +
+                '<input hidden="hidden" name="id" id="Id" />'+
+                '  </div>\n' +
+                appendStr +
+                '</form>'
+    }
+
+    function generalPicturePop(ele) {
+        var uploadInst = upload.render({
+            elem: ele //绑定元素
+            , accept: 'images'
+            , acceptMime: 'image/jpg, image/png'
+            , exts: 'jpg|png|jpeg'
+            , size: '4096'
+            , number: 1
+            , auto: false,
+            choose: function (obj) {
+                obj.preview(function (index, file, result) {
+                    $("#upload").empty(); //清空子节点
+                    $("#upload").prepend('<img src="' + result + '" alt="picture" style="width: 100%;height: 100%;" />')
+                });
+            }
+            , done: function (res) {
+            }
+            , error: function () {
+            }
+        });
+    }
+</script>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">show</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">edit</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">del</a>
+</script>
+</body>
+</html>

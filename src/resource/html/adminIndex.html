@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>{{.Title}}</title>
+    <link rel="icon" href="/img/avatar.png">
+    <link rel="stylesheet" href="/resource/plugins/layui/css/layui.css">
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo">{{.ConsoleName}}</div>
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <img src="/img/avatar.png" class="layui-nav-img">
+                {{.UserName}}
+                </a>
+            </li>
+            <li class="layui-nav-item"><a href="javascript:logout();">{{.LogoutName}}</a></li>
+        </ul>
+    </div>
+
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+            {{range $x, $y := .Menus}}
+                <li class="layui-nav-item {{$y.Class}}">
+                    <a class="" href="{{$y.Url}}">{{$y.Name}}</a>
+                </li>
+            {{else}}
+                {{end}}
+            </ul>
+        </div>
+    </div>
+
+    <div class="layui-body">
+        <div style="padding: 15px;">
+            <div>
+                <span>当前文章数: {{.Article}}个</span>
+            </div>
+            <div>
+                <span>当前分类数: {{.Category}}个</span>
+            </div>
+            <div>
+                <span>当前评论数：{{.Comment}}个</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-footer">
+        © ahbkc - {{.Welcome}}
+    </div>
+</div>
+<script src="/resource/plugins/layui/layui.js"></script>
+<script>
+    //JavaScript代码区域
+    let $;
+    let layer;
+    layui.use(['layer'], function(){
+        $ = layui.jquery;
+        layer = layui.layer;
+    });
+
+    let logout = function () {
+        //弹出confirm窗口
+        layer.confirm('{{.ConfirmLogoutTips}}？', {
+            btn: ['确定','取消'], title: '退出确认', anim: 1, area: ['500px', '300px'] //按钮
+        }, function(){
+            $.ajax({
+                type: 'POST',
+                url: '/admin/logout_ajax',
+                data: {},
+                contentType: 'application/x-www-form-urlencoded',
+                dataType: 'json',
+                async: true,
+                success: function (result, textStatus) {
+                    if (result.code != 100) {
+                        layer.msg(result.msg)
+                    } else if (result.code == 100) {
+                        layer.msg(result.msg);
+                        setTimeout(function () {
+                            window.location.href = result.data;
+                        }, 1000)
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    layer.msg('{{.AjaxErrorMsg}}')
+                }
+            })
+        });
+    };
+</script>
+</body>
+</html>

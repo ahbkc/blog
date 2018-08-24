@@ -1,0 +1,61 @@
+-- 创建文章表
+CREATE TABLE article (
+  id CHAR(50) PRIMARY KEY NOT NULL, --uuid值
+  title CHAR(120) NOT NULL,
+  picture CHAR(120) NOT NULL,
+  content TEXT NOT NULL,
+  state INT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT,
+  deleted_at TEXT
+)
+
+--文章分类表
+CREATE TABLE article_category (
+  id CHAR(50) PRIMARY KEY NOT NULL,
+  c_name CHAR(20) NOT NULL,
+  c_describe CHAR(35),
+  created_at TEXT NOT NULL,
+  updated_at TEXT,
+  deleted_at TEXT
+)
+
+--评论表
+CREATE TABLE article_comment (
+  id CHAR(50) PRIMARY KEY NOT NULL,
+  comment_user_name CHAR(20) NOT NULL,
+  comment_user_email CHAR(20) NOT NULL,
+  comment_user_content TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT,
+  deleted_at TEXT
+)
+
+--文章分类关系表
+CREATE TABLE article_category(
+  ID CHAR(50) PRIMARY KEY NOT NULL,
+  article_id CHAR(50) NOT NULL,
+  category_id CHAR(50) NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT,
+  deleted_at TEXT
+);
+
+--文章评论关系表
+CREATE TABLE article_comment(
+  ID CHAR(50) PRIMARY KEY NOT NULL,
+  article_id CHAR(50) NOT NULL,
+  comment_id CHAR(50) NOT NULL,
+  created_id TEXT NOT NULL,
+  updated_at TEXT,
+  deleted_at TEXT
+);
+
+--日志表
+CREATE TABLE log (
+  ID CHAR(50) PRIMARY KEY NOT NULL,
+  event_describe TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT,
+  deleted_at TEXT
+);

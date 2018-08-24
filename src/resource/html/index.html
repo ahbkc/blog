@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/resource/plugins/layui/css/layui.css">
+    <link rel="icon" href="/img/avatar.png">
+    <style>
+        .image > img {
+            width: 100%;
+            height: 380px;
+        }
+
+        .layui-main {
+            padding-top: 80px;
+        }
+
+        .show-image {
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .layui-main {
+            width: 940px;
+        }
+
+        .article-title {
+            line-height: 40px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body style="background-color: #f7f7f7!important;overflow-x: hidden;">
+<header class="layui-layout layui-layout-admin">
+    <div class="layui-header layui-bg-black">
+        <div class="layui-logo"><a href="/index.html" style="color: white"><img style="height: 50px;width: 50px;border-radius: 50%;line-height: 30px" src="/img/avatar.png" /></a></div>
+        <ul class="layui-nav layui-layout-right" lay-filter="">
+            <li class="layui-nav-item "><a href="/about.html">关于</a></li>
+            <li class="layui-nav-item "><a href="javascript:void(0)"><i class="layui-icon" style="font-size: 20px">&#xe615;</i></a>
+            </li>
+        </ul>
+    </div>
+</header>
+<div class="layui-main">
+    <div class="layui-fluid layui-col-space30 layui-clear">
+    {{range $x, $y := .List}}
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+            <div class="inner-container">
+                <a href="/detail/{{$y.Id}}.html">
+                    <div class="image">
+                        <img class="show-image" src="{{$y.Picture}}" alt="image"/>
+                    </div>
+                    <span class="article-title">{{$y.Title}}</span>
+                </a>
+            </div>
+        </div>
+    {{end}}
+    </div>
+    <div id="page"></div>
+</div>
+</body>
+<script src="/resource/plugins/layui/layui.js"></script>
+<script>
+    layui.use(['element', 'laypage'], function () {
+        var element = layui.element;
+        var laypage = layui.laypage;
+
+        laypage.render({
+            elem: 'page'
+            ,count: {{.PAGE_Count}}
+            ,curr: {{.PAGE_Curr}}
+            ,jump: function(obj, first){
+                if(!first){
+                    window.location.href = "/index.html?page="+ obj.curr;  //分页跳转
+                }
+            }
+        });
+    });
+</script>
+</html>
