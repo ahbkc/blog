@@ -1,20 +1,25 @@
 package core
 
 import (
-	"net/http"
-	"html/template"
-	"utils"
-	"github.com/jinzhu/gorm"
-	"structs"
-	"github.com/gorilla/mux"
 	"encoding/json"
+	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
+	"html/template"
+	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
+	"structs"
+	"utils"
 )
 
 //index page
 func IndexGet(w http.ResponseWriter, r *http.Request) {
+	//增加判断，用来重定向　/ 路径访问
+	if r.URL.Path == "/" {
+		http.Redirect(w, r, r.Host+"/index.html", 302)
+		return
+	}
 	t, err := template.New("index").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "index.html"))
 	utils.CheckErr(err)
 	data := utils.GetCommonParamMap()
@@ -64,18 +69,17 @@ func IndexGet(w http.ResponseWriter, r *http.Request) {
 	db.Table("article").Count(&count)
 	//utils.CheckErr(err)
 	var next int = 0
-	if count % limitIntVal > 0 {
+	if count%limitIntVal > 0 {
 		next = 1
 	}
 
-	data["PAGE_Count"] = strconv.Itoa((count / limitIntVal) + next) + "0"
+	data["PAGE_Count"] = strconv.Itoa((count/limitIntVal)+next) + "0"
 	data["PAGE_Curr"] = page
 
-	data["List"] = articles  //数据
+	data["List"] = articles //数据
 	data["Title"] = "blob 首页"
 	t.Execute(w, data)
 }
-
 
 //detail page
 func DetailPageGet(w http.ResponseWriter, r *http.Request) {
@@ -139,11 +143,11 @@ func DetailPageGet(w http.ResponseWriter, r *http.Request) {
 	db.Table("comment").Where("relevancy_id = ?", id).Count(&count)
 	//utils.CheckErr(err)
 	var next int = 0
-	if count % limitIntVal > 0 {
+	if count%limitIntVal > 0 {
 		next = 1
 	}
 
-	data["PAGE_Count"] = strconv.Itoa((count / limitIntVal) + next) + "0"
+	data["PAGE_Count"] = strconv.Itoa((count/limitIntVal)+next) + "0"
 	data["PAGE_Curr"] = page
 
 	err = t.Execute(w, data)
@@ -155,8 +159,8 @@ func GetAboutPage(w http.ResponseWriter, r *http.Request) {
 	t, err := template.New("about").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "about.html"))
 	utils.CheckErr(err)
 
-	var page string  //default 1
-	id := "adfasgasdfasd"  //comment key value
+	var page string       //default 1
+	id := "adfasgasdfasd" //comment key value
 
 	paramVal, err := url.ParseQuery(r.URL.RawQuery)
 	utils.CheckErr(err)
@@ -201,12 +205,12 @@ func GetAboutPage(w http.ResponseWriter, r *http.Request) {
 	db.Table("comment").Where("relevancy_id = ?", id).Count(&count)
 	//utils.CheckErr(err)
 	var next int = 0
-	if count % limitIntVal > 0 {
+	if count%limitIntVal > 0 {
 		next = 1
 	}
 	data["Comments"] = comments
 	data["RelevancyId"] = id
-	data["PAGE_Count"] = strconv.Itoa((count / limitIntVal) + next) + "0"
+	data["PAGE_Count"] = strconv.Itoa((count/limitIntVal)+next) + "0"
 	data["PAGE_Curr"] = page
 
 	t.Execute(w, data)
