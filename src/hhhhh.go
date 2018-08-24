@@ -1,8 +1,8 @@
 package main
 
 import (
-	"utils"
 	"core"
+	"utils"
 )
 
 func main() {
