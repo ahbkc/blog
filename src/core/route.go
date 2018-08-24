@@ -1,15 +1,15 @@
 package core
 
 import (
-	"github.com/gorilla/mux"
-	"net/http"
-	"strings"
-	"html/template"
-	"utils"
-	"regexp"
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
+	"html/template"
+	"net/http"
+	"regexp"
 	_ "statik"
+	"strings"
+	"utils"
 )
 
 type Route struct {
@@ -25,6 +25,12 @@ var routes = []Route{
 		"/verifyCodeGenerate",
 		"GET",
 		VerifyCodeGenerate,
+	},
+	{
+		"noSuffixIndex",
+		"/",
+		"GET",
+		IndexGet,
 	},
 	{
 		"index",
@@ -141,25 +147,28 @@ func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true).UseEncodedPath()
 	for _, v := range routes {
 		vla := utils.Method[v.Method]
-		v.Path = v.Path + vla
+		if !strings.HasPrefix(v.Name, "noSuffix") { //加上约束条件，过滤不用加后缀的路径
+			v.Path = v.Path + vla
+		}
 		router.Path(v.Path).Methods(v.Method).Handler(v.HandleFunc).
 			Name(v.Name)
 	}
+
 	statikFS, err := fs.New()
 	if err != nil {
 		utils.CheckStartError(err)
 	}
-	utils.StatikFS = statikFS  //赋值
+	utils.StatikFS = statikFS //赋值
 
 	router.PathPrefix("/resource/").Methods("GET").Name("resource").
 		Handler(http.StripPrefix("/resource", http.FileServer(utils.StatikFS))) //static file path
 
 	router.PathPrefix("/img/").Methods("GET").Name("img").
-		Handler(http.StripPrefix("/img/", http.FileServer(http.Dir(utils.Dir + "/image"))))
+		Handler(http.StripPrefix("/img/", http.FileServer(http.Dir(utils.Dir+"/image"))))
 
 	//router.Use(mux.CORSMethodMiddleware(router))  //CROS
-	router.Use(Middleware)                            //use middleware
-	router.Walk(WalkFunc)                             //configure walkFunc
+	router.Use(Middleware) //use middleware
+	router.Walk(WalkFunc)  //configure walkFunc
 	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		NotFundHandler(w, r) //page notFound handler
 	})
@@ -175,7 +184,7 @@ func Middleware(next http.Handler) http.Handler {
 		defer func() {
 			if err, ok := recover().(error); ok {
 				fmt.Println(err)
-				Internal500Err(w, r)  //general inner exception handler
+				Internal500Err(w, r) //general inner exception handler
 			}
 		}()
 		regex1, _ := regexp.Compile(`^/admin*`)
@@ -186,16 +195,16 @@ func Middleware(next http.Handler) http.Handler {
 		//w.Header().Add("Access-Control-Allow-Origin", "*") cros
 		if regex1.MatchString(r.URL.Path) && !regex2.MatchString(r.URL.Path) {
 			if cookie, _ := r.Cookie("hhhhh_cookie"); cookie == nil {
-				http.Redirect(w, r, "http://localhost:9099/admin/login.html", http.StatusFound)  //redirect /admin/login
-			}else {
+				http.Redirect(w, r, "http://localhost:9099/admin/login.html", http.StatusFound) //redirect /admin/login
+			} else {
 				//verify session
 				if utils.Sessions.Name != "" && utils.Sessions.Value != "" {
-					next.ServeHTTP(w, r)  //next
+					next.ServeHTTP(w, r) //next
 				} else {
-					http.Redirect(w, r, "http://localhost:9099/admin/login.html", http.StatusFound)  //redirect /admin/login
+					http.Redirect(w, r, "http://localhost:9099/admin/login.html", http.StatusFound) //redirect /admin/login
 				}
 			}
-		}else {
+		} else {
 			next.ServeHTTP(w, r) //next
 		}
 	})
