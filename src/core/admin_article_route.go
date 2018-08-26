@@ -1,23 +1,37 @@
 package core
 
 import (
-	"net/http"
-	"utils"
 	"encoding/json"
-	"structs"
 	"github.com/jinzhu/gorm"
-	"strconv"
-	"time"
 	"github.com/satori/go.uuid"
-	"io/ioutil"
-	"strings"
-	"net/url"
 	"html/template"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"structs"
+	"time"
+	"utils"
+)
+
+var (
+	t   *template.Template
+	err error
 )
 
 //admin article manage page
 func AdminArticleGet(w http.ResponseWriter, r *http.Request) {
-	t, err := template.New("admin_article").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "adminArticle.html"))
+	//PRODUCT  从打包的静态文件中获取文件
+	if utils.ConfigureMap["BASE"]["ENVIRONMENT"] == "PRODUCT" {
+		t, err = template.New("admin_article").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "adminArticle.html"))
+	} else {
+		//读取.html文件  DEVELOP
+		path := filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath+"adminArticle.html")
+		t, err = template.ParseFiles(path)
+
+	}
 	utils.CheckErr(err)
 	data := utils.GetCommonParamMap()
 	data["Menus"] = utils.GetMenuList(2)
@@ -68,7 +82,7 @@ func AdminAddArticleAddAjaxPost(w http.ResponseWriter, r *http.Request) {
 	var buff = make([]byte, 2097152) //最大支持上传2MB文件,如果超出则会造成文件缺失
 	_, err = picture.Read(buff)
 	utils.CheckErr(err)
-	if len(title) <= 0 || len(content) <= 0{
+	if len(title) <= 0 || len(content) <= 0 {
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: utils.LanguageMap["API_MESSAGE"]["PARAMETERS_CANNOT_BE_EMPTY"]})
 		return
 	}
@@ -76,7 +90,7 @@ func AdminAddArticleAddAjaxPost(w http.ResponseWriter, r *http.Request) {
 	fileNameSplits := strings.Split(handler.Filename, ".")
 	suffix := ""
 	if len(fileNameSplits) < 1 {
-		suffix = ".jpeg"  //default
+		suffix = ".jpeg" //default
 	} else {
 		suffix = "." + fileNameSplits[1]
 	}
@@ -84,10 +98,10 @@ func AdminAddArticleAddAjaxPost(w http.ResponseWriter, r *http.Request) {
 	utils.CheckErr(err)
 	//get img upload path from jsonFile
 	//path := "/img/article/" + uuids.String() + suffix  //picture path
-	uploadFolder := "article"  //picture folder
+	uploadFolder := "article" //picture folder
 	staticPath := utils.ConfigureMap["FILE_PATH"]["STATIC_FILE"]
 	realPath := staticPath + "/" + uploadFolder + "/" + uuids.String() + suffix
-	err = ioutil.WriteFile(utils.Dir + realPath, buff, 0666)
+	err = ioutil.WriteFile(utils.Dir+realPath, buff, 0666)
 	utils.CheckErr(err)
 	db, err := gorm.Open(utils.ConfigureMap["DATABASE"]["dialect"], utils.Dir+utils.ConfigureMap["DATABASE"]["db_path"])
 	utils.CheckErr(err)
@@ -95,17 +109,16 @@ func AdminAddArticleAddAjaxPost(w http.ResponseWriter, r *http.Request) {
 	db.SingularTable(true)
 	defer db.Close()
 	err = db.Save(structs.Article{
-		Id: uuids.String(),
-		Title: title,
-		Picture: strings.Replace(realPath, "image", "img", -1),
-		Content: template.HTML(content),
+		Id:        uuids.String(),
+		Title:     title,
+		Picture:   strings.Replace(realPath, "image", "img", -1),
+		Content:   template.HTML(content),
 		CreatedAt: time.Now().Format("2006-01-02 15:04:05"),
 	}).Error
 	utils.CheckErr(err)
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: utils.LanguageMap["API_MESSAGE"]["EXECUTION_SUCCESS"]})
 	return
 }
-
 
 //delete article
 func AdminDelArticleDelAjaxPost(w http.ResponseWriter, r *http.Request) {
@@ -134,7 +147,6 @@ func AdminDelArticleDelAjaxPost(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-
 //edit article
 func AdminEditArticleEditAjaxPost(w http.ResponseWriter, r *http.Request) {
 	values, err := url.ParseQuery(r.URL.RawQuery)
@@ -148,7 +160,7 @@ func AdminEditArticleEditAjaxPost(w http.ResponseWriter, r *http.Request) {
 		utils.CheckErr(err)
 		title = r.FormValue("title")
 		content = r.FormValue("content")
-	}else {
+	} else {
 		err = r.ParseMultipartForm(10000)
 		utils.CheckErr(err)
 		id = r.FormValue("id")
@@ -160,7 +172,7 @@ func AdminEditArticleEditAjaxPost(w http.ResponseWriter, r *http.Request) {
 		var buff = make([]byte, 2097152) //最大支持上传2MB文件,如果超出则会造成文件缺失
 		_, err = picture.Read(buff)
 		utils.CheckErr(err)
-		if len(title) <= 0 || len(content) <= 0{
+		if len(title) <= 0 || len(content) <= 0 {
 			json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: utils.LanguageMap["API_MESSAGE"]["PARAMETERS_CANNOT_BE_EMPTY"]})
 			return
 		}
@@ -168,17 +180,17 @@ func AdminEditArticleEditAjaxPost(w http.ResponseWriter, r *http.Request) {
 		fileNameSplits := strings.Split(handler.Filename, ".")
 		suffix := ""
 		if len(fileNameSplits) < 1 {
-			suffix = ".jpeg"  //default
+			suffix = ".jpeg" //default
 		} else {
 			suffix = "." + fileNameSplits[1]
 		}
 		uuids, err := uuid.NewV4() //general uuids value
 		utils.CheckErr(err)
 
-		uploadFolder := "article"  //picture folder
+		uploadFolder := "article" //picture folder
 		staticPath := utils.ConfigureMap["FILE_PATH"]["STATIC_FILE"]
 		realPath = staticPath + "/" + uploadFolder + "/" + uuids.String() + suffix
-		err = ioutil.WriteFile(utils.Dir + realPath, buff, 0666)
+		err = ioutil.WriteFile(utils.Dir+realPath, buff, 0666)
 		utils.CheckErr(err)
 
 		utils.CheckErr(err)
@@ -199,8 +211,39 @@ func AdminEditArticleEditAjaxPost(w http.ResponseWriter, r *http.Request) {
 	if realPath == "" {
 		realPath = article.Picture
 	}
-	err = db.Model(&article).Updates(structs.Article{Title:title, Content: template.HTML(content), Picture: strings.Replace(realPath, "image", "img", -1), UpdatedAt:time.Now().Format("2006-01-02 15:04:05")}).Error
+	err = db.Model(&article).Updates(structs.Article{Title: title, Content: template.HTML(content), Picture: strings.Replace(realPath, "image", "img", -1), UpdatedAt: time.Now().Format("2006-01-02 15:04:05")}).Error
 	utils.CheckErr(err)
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: utils.LanguageMap["API_MESSAGE"]["EXECUTION_SUCCESS"]})
 	return
+}
+
+//edit article state
+func AdminEditArticleEditStateAjaxPost(w http.ResponseWriter, r *http.Request) {
+	err = r.ParseForm()
+	utils.CheckErr(err)
+
+	id := strings.TrimSpace(r.FormValue("id"))
+	state, err := strconv.Atoi(strings.TrimSpace(r.FormValue("state")))
+	utils.CheckErr(err)
+
+	if len(id) <= 0 {
+		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: utils.LanguageMap["API_MESSAGE"]["PARAMETERS_CANNOT_BE_EMPTY"]})
+		return
+	}
+
+	db, err := gorm.Open(utils.ConfigureMap["DATABASE"]["dialect"], utils.Dir+utils.ConfigureMap["DATABASE"]["db_path"])
+	utils.CheckErr(err)
+	//disabled mores table
+	db.SingularTable(true)
+	defer db.Close()
+	var article structs.Article
+	err = db.Where("id = ?", id).First(&article).Error
+	utils.CheckErr(err)
+	if article.Id != "" {
+		err = db.Model(&article).Update("State", state).Error
+		utils.CheckErr(err)
+		json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: utils.LanguageMap["API_MESSAGE"]["EXECUTION_SUCCESS"]})
+		return
+	}
+	json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: utils.LanguageMap["API_MESSAGE"]["EXECUTION_FAILED"]})
 }
