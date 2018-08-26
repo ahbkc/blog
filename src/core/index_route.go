@@ -15,11 +15,6 @@ import (
 
 //index page
 func IndexGet(w http.ResponseWriter, r *http.Request) {
-	//增加判断，用来重定向　/ 路径访问
-	if r.URL.Path == "/" {
-		http.Redirect(w, r, r.Host+"/index.html", 302)
-		return
-	}
 	t, err := template.New("index").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "index.html"))
 	utils.CheckErr(err)
 	data := utils.GetCommonParamMap()
@@ -61,7 +56,7 @@ func IndexGet(w http.ResponseWriter, r *http.Request) {
 	utils.CheckErr(err)
 
 	var articles []structs.Article
-	err = db.Find(&articles).Limit(limit).Offset((pageIntVal - 1) * limitIntVal).Error
+	err = db.Debug().Table("article").Where("state = ?", 0).Limit(limit).Offset((pageIntVal - 1) * limitIntVal).Find(&articles).Error
 	utils.CheckErr(err)
 
 	//count number
