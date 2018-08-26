@@ -140,6 +140,12 @@ var routes = []Route{
 		"GET",
 		AdminArticleGet,
 	},
+	{
+		"admin_article_edit_state",
+		"/admin/article/edit/state",
+		"POST",
+		AdminEditArticleEditStateAjaxPost,
+	},
 }
 
 //build a router
