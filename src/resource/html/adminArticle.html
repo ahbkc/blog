@@ -24,7 +24,7 @@
 
     <div class="layui-side layui-bg-black">
         <div class="layui-side-scroll">
-            <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+            <ul class="layui-nav layui-nav-tree" lay-filter="test">
             {{range $x, $y := .Menus}}
                 <li class="layui-nav-item {{$y.Class}}">
                     <a class="" href="{{$y.Url}}">{{$y.Name}}</a>
@@ -40,8 +40,8 @@
             <div id="toolbar">
                 <div style="text-align: right;">
                     <div class="layui-btn-container">
-                        <button id="searchBtn" class="layui-btn layui-btn-primary">search</button>
-                        <button id="addBtn" class="layui-btn">add</button>
+                        <button id="searchBtn" class="layui-btn layui-btn-primary">搜索</button>
+                        <button id="addBtn" class="layui-btn">添加</button>
                         <button id="exportBtn" class="layui-btn"><i class="layui-icon">&#xe601;</i></button>
                     </div>
                 </div>
@@ -83,15 +83,59 @@
             , cols: [[
                 {type: 'checkbox'}
                 , {field: 'Id', title: 'ID', width: 300}
-                , {field: 'Title', title: 'title', width: 300}
-                , {field: 'State', title: 'state', width: 90}
-                , {field: 'UpdatedAt', title: 'lastUpdateTime', sort: true}
-                , {field: 'CreatedAt', title: 'createTime', sort: true}
-                , {fixed: 'right', width: 150, align: 'center', title: 'operation', toolbar: '#barDemo'}
+                , {field: 'Title', title: '标题', width: 300}
+                , {field: 'State', title: '状态', width: 90, templet: function (v) {
+                      return '<div><input type="checkbox" init="'+v.State+'" value="'+v.Id+'" lay-filter="switchState" '+(v.State === 0 ? 'checked="checked"' : "")+' lay-text="显|隐" lay-skin="switch" title="状态"></div>'
+                    },unresize: true}
+                , {field: 'UpdatedAt', title: '最后更新时间', sort: true}
+                , {field: 'CreatedAt', title: '创建时间', sort: true}
+                , {fixed: 'right', width: 150, align: 'center', title: '操作', toolbar: '#barDemo'}
             ]]
             , where: {
                 keyword: ""
             }
+        });
+
+        //监听性别操作
+        form.on('switch(switchState)', function(obj){
+            var checked = obj.elem.checked
+            var elem = $(obj.elem)
+            var init = elem.attr("init")
+            $.ajax({
+                type: 'POST',
+                url: '/admin/article/edit/state_ajax',
+                data: {id: obj.value, state: checked ? '0' : '-1'},
+                contentType: 'application/x-www-form-urlencoded',
+                dataType: 'json',
+                async: true,
+                success: function (result, textStatus) {
+                    if (result.code != 100) {
+                        if (init == -1) {
+                            $(obj.elem).removeAttr('checked');
+                            form.render('checkbox')
+                        }
+                        layer.msg(result.msg)
+                    } else if (result.code == 100) {
+                        layer.msg(result.msg, {time: 1500}, function () {
+                            grid.reload({
+                                page: {
+                                    curr: 1
+                                }
+                            });
+                        });
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    if (init == -1) {
+                        $(obj.elem).removeAttr('checked');
+                        form.render('checkbox')
+                    } else {
+                        $(obj.elem).attr("checked", "checked")
+                        form.render('checkbox')
+                    }
+                    layer.msg('{{.AJAX_ERROR_TIPS_MESSAGE}}')
+                }
+            });
         });
 
         $("#searchBtn").on("click", function () {
@@ -105,7 +149,7 @@
                     rEle.css('width', '29.8%')
                 }
                 const tp = '<div class="layui-anim layui-anim-scale" style="text-align: left;display: inline-block;width: 69.8%;">\n' +
-                        '                    <input id="searchInput" type="text" name="title" required style="width: 90%;display: inline-block" lay-verify="required" placeholder="please input categoryName、categoryDescribe、id..." autocomplete="off" class="layui-input">\n' +
+                        '                    <input id="searchInput" type="text" name="title" required style="width: 90%;display: inline-block" lay-verify="required" placeholder="请输入分类名称、分类说明或id查找" autocomplete="off" class="layui-input">\n' +
                         '                    <i id="searchIcon" class="layui-icon" style="display: inline-block;cursor: pointer;font-size: 26px;position: relative;top: 5px;right: 40px">&#xe615;</i>\n' +
                         '                </div>';
                 $("#toolbar").prepend(tp)
@@ -135,10 +179,10 @@
                 //构建一个默认的编辑器
                 layeditIndex = layedit.build('LAY_demo1', {
                     hideTool: [
-                        ,'link' //超链接
-                        ,'unlink' //清除链接
-                        ,'face' //表情
-                        ,'image' //插入图片
+                        , 'link' //超链接
+                        , 'unlink' //清除链接
+                        , 'face' //表情
+                        , 'image' //插入图片
                     ]
                 });
             } else if (layEvent === 'del') {
@@ -238,7 +282,7 @@
                         layer.msg('{{.AJAX_ERROR_TIPS_MESSAGE}}')
                     }
                 });
-            }else {
+            } else {
                 //ajax request
                 data.field.id = selectLineData.Id;
                 data.field.content = layedit.getContent(layeditIndex);
@@ -353,11 +397,11 @@
                     '  </div>\n';
             if (flag == 'add') {
                 appendStr1 = '<i class="layui-icon" style="font-size: 50px;position: relative;left: 40%;top:30%">&#xe654</i>';
-            }else {
-                appendStr1 = '<img src= "'+Picture+'" style="width: 100%;height: 100%;" />';
+            } else {
+                appendStr1 = '<img src= "' + Picture + '" style="width: 100%;height: 100%;" />';
             }
-        }else {
-            appendStr1 = '<img src= "'+Picture+'" style="width: 100%;height: 100%;" />'
+        } else {
+            appendStr1 = '<img src= "' + Picture + '" style="width: 100%;height: 100%;" />'
         }
         return '<form class="layui-form" id="ajaxForm" enctype="multipart/form-data" style="padding: 15px"> \n' +
                 '  <div class="layui-form-item">\n' +
@@ -370,16 +414,16 @@
                 '    <label class="layui-form-label">picture</label>\n' +
                 '    <div class="layui-input-block">\n' +
                 '       <div style="width: 40%;height: 150px;border-style: dotted;cursor: pointer" id="upload">' +
-                appendStr1+
+                appendStr1 +
                 '       </div>' +
                 '    </div>\n' +
                 '  </div>\n' +
                 '  <div class="layui-form-item layui-form-text">\n' +
                 '    <label class="layui-form-label">content</label>\n' +
                 '    <div class="layui-input-block">\n' +
-                '      <textarea placeholder="please input..." name="content" class="layui-textarea" id="LAY_demo1" style="display: none;resize: none">' +Content+ '</textarea>\n' +
+                '      <textarea placeholder="please input..." name="content" class="layui-textarea" id="LAY_demo1" style="display: none;resize: none">' + Content + '</textarea>\n' +
                 '    </div>\n' +
-                '<input hidden="hidden" name="id" id="Id" />'+
+                '<input hidden="hidden" name="id" id="Id" />' +
                 '  </div>\n' +
                 appendStr +
                 '</form>'
@@ -408,9 +452,9 @@
     }
 </script>
 <script type="text/html" id="barDemo">
-    <a class="layui-btn layui-btn-xs" lay-event="detail">show</a>
-    <a class="layui-btn layui-btn-xs" lay-event="edit">edit</a>
-    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">del</a>
+    <a class="layui-btn layui-btn-xs" lay-event="detail">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
 </script>
 </body>
 </html>
