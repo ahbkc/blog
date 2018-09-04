@@ -3,6 +3,7 @@ package core
 import (
 	"net/http"
 	"html/template"
+	"path/filepath"
 	"utils"
 	"encoding/json"
 	"structs"
@@ -14,7 +15,13 @@ import (
 
 //admin login page --get
 func AdminLoginGet(w http.ResponseWriter, r *http.Request) {
-	t, err := template.New("admin_login").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "adminLogin.html"))
+	if utils.ConfigureMap["BASE"]["ENVIRONMENT"] == "PRODUCT" {
+		t, err = template.New("admin_login").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "adminLogin.html"))
+	} else {
+		//读取.html文件  DEVELOP
+		path := filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath + "adminLogin.html")
+		t, err = template.ParseFiles(path)
+	}
 	utils.CheckErr(err)
 	t.Execute(w, utils.GetCommonParamMap())
 }
@@ -69,7 +76,13 @@ func AdminLoginPost(w http.ResponseWriter, r *http.Request) {
 
 //admin index page  --get
 func AdminIndexGet(w http.ResponseWriter, r *http.Request) {
-	t, err := template.New("admin_index").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "adminIndex.html"))
+	if utils.ConfigureMap["BASE"]["ENVIRONMENT"] == "PRODUCT" {
+		t, err = template.New("admin_index").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "adminIndex.html"))
+	} else {
+		//读取.html文件  DEVELOP
+		path := filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath + "adminIndex.html")
+		t, err = template.ParseFiles(path)
+	}
 	utils.CheckErr(err)
 	data := utils.GetCommonParamMap()
 	data["Menus"] = utils.GetMenuList(0)

@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"structs"
@@ -15,12 +16,18 @@ import (
 
 //index page
 func IndexGet(w http.ResponseWriter, r *http.Request) {
-	t, err := template.New("index").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "index.html"))
+	//PRODUCT  从打包的静态文件中获取文件
+	if utils.ConfigureMap["BASE"]["ENVIRONMENT"] == "PRODUCT" {
+		t, err = template.New("index").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "index.html"))
+	} else {
+		//读取.html文件  DEVELOP
+		path := filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath + "index.html")
+		t, err = template.ParseFiles(path)
+	}
 	utils.CheckErr(err)
 	data := utils.GetCommonParamMap()
 
 	var page string
-
 	paramVal, err := url.ParseQuery(r.URL.RawQuery)
 	utils.CheckErr(err)
 
@@ -56,7 +63,7 @@ func IndexGet(w http.ResponseWriter, r *http.Request) {
 	utils.CheckErr(err)
 
 	var articles []structs.Article
-	err = db.Debug().Table("article").Where("state = ?", 0).Limit(limit).Offset((pageIntVal - 1) * limitIntVal).Find(&articles).Error
+	err = db.Table("article").Where("state = ?", 0).Limit(limit).Offset((pageIntVal - 1) * limitIntVal).Find(&articles).Error
 	utils.CheckErr(err)
 
 	//count number
@@ -78,7 +85,13 @@ func IndexGet(w http.ResponseWriter, r *http.Request) {
 
 //detail page
 func DetailPageGet(w http.ResponseWriter, r *http.Request) {
-	t, err := template.New("detail").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "detail.html"))
+	if utils.ConfigureMap["BASE"]["ENVIRONMENT"] == "PRODUCT" {
+		t, err = template.New("detail").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "detail.html"))
+	} else {
+		//读取.html文件  DEVELOP
+		path := filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath + "detail.html")
+		t, err = template.ParseFiles(path)
+	}
 	utils.CheckErr(err)
 	data := utils.GetCommonParamMap()
 	vars := mux.Vars(r)
@@ -151,7 +164,13 @@ func DetailPageGet(w http.ResponseWriter, r *http.Request) {
 
 //about
 func GetAboutPage(w http.ResponseWriter, r *http.Request) {
-	t, err := template.New("about").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "about.html"))
+	if utils.ConfigureMap["BASE"]["ENVIRONMENT"] == "PRODUCT" {
+		t, err = template.New("about").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "about.html"))
+	} else {
+		//读取.html文件  DEVELOP
+		path := filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath + "about.html")
+		t, err = template.ParseFiles(path)
+	}
 	utils.CheckErr(err)
 
 	var page string       //default 1

@@ -3,6 +3,7 @@ package core
 import (
 	"net/http"
 	"encoding/json"
+	"path/filepath"
 	"utils"
 	"structs"
 	"github.com/jinzhu/gorm"
@@ -14,7 +15,13 @@ import (
 
 //admin category manage page
 func AdminCategoryGet(w http.ResponseWriter, r *http.Request) {
-	t, err := template.New("admin_category").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "adminCategory.html"))
+	if utils.ConfigureMap["BASE"]["ENVIRONMENT"] == "PRODUCT" {
+		t, err = template.New("admin_category").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "adminCategory.html"))
+	} else {
+		//读取.html文件  DEVELOP
+		path := filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath + "adminCategory.html")
+		t, err = template.ParseFiles(path)
+	}
 	utils.CheckErr(err)
 	data := utils.GetCommonParamMap()
 	data["Menus"] = utils.GetMenuList(1)

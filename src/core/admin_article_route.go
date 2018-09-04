@@ -30,7 +30,6 @@ func AdminArticleGet(w http.ResponseWriter, r *http.Request) {
 		//读取.html文件  DEVELOP
 		path := filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath+"adminArticle.html")
 		t, err = template.ParseFiles(path)
-
 	}
 	utils.CheckErr(err)
 	data := utils.GetCommonParamMap()
