@@ -7,7 +7,6 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
-	"path/filepath"
 	"regexp"
 	"strconv"
 	"structs"
@@ -21,8 +20,7 @@ func IndexGet(w http.ResponseWriter, r *http.Request) {
 		t, err = template.New("index").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "index.html"))
 	} else {
 		//读取.html文件  DEVELOP
-		path := filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath + "index.html")
-		t, err = template.ParseFiles(path)
+		t, err = template.ParseFiles(GetFilePath("index.html"))
 	}
 	utils.CheckErr(err)
 	data := utils.GetCommonParamMap()
@@ -89,8 +87,7 @@ func DetailPageGet(w http.ResponseWriter, r *http.Request) {
 		t, err = template.New("detail").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "detail.html"))
 	} else {
 		//读取.html文件  DEVELOP
-		path := filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath + "detail.html")
-		t, err = template.ParseFiles(path)
+		t, err = template.ParseFiles(GetFilePath("detail.html"))
 	}
 	utils.CheckErr(err)
 	data := utils.GetCommonParamMap()
@@ -168,8 +165,7 @@ func GetAboutPage(w http.ResponseWriter, r *http.Request) {
 		t, err = template.New("about").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "about.html"))
 	} else {
 		//读取.html文件  DEVELOP
-		path := filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath + "about.html")
-		t, err = template.ParseFiles(path)
+		t, err = template.ParseFiles(GetFilePath("about.html"))
 	}
 	utils.CheckErr(err)
 

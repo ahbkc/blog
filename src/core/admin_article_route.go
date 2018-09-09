@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"structs"
@@ -25,11 +24,10 @@ var (
 func AdminArticleGet(w http.ResponseWriter, r *http.Request) {
 	//PRODUCT  从打包的静态文件中获取文件
 	if utils.ConfigureMap["BASE"]["ENVIRONMENT"] == "PRODUCT" {
-		t, err = template.New("admin_article").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "adminArticle.html"))
+		t, err = template.New("admin_article").Parse(utils.ReadHTMLFileToString(utils.AdminHtmlPath + "adminArticle.html"))
 	} else {
 		//读取.html文件  DEVELOP
-		path := filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath+"adminArticle.html")
-		t, err = template.ParseFiles(path)
+		t, err = template.ParseFiles(GetFilePath("adminArticle.html"))
 	}
 	utils.CheckErr(err)
 	data := utils.GetCommonParamMap()

@@ -1,26 +1,24 @@
 package core
 
 import (
-	"net/http"
 	"encoding/json"
-	"path/filepath"
-	"utils"
-	"structs"
 	"github.com/jinzhu/gorm"
-	"strconv"
 	"github.com/satori/go.uuid"
-	"time"
 	"html/template"
+	"net/http"
+	"strconv"
+	"structs"
+	"time"
+	"utils"
 )
 
 //admin category manage page
 func AdminCategoryGet(w http.ResponseWriter, r *http.Request) {
 	if utils.ConfigureMap["BASE"]["ENVIRONMENT"] == "PRODUCT" {
-		t, err = template.New("admin_category").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "adminCategory.html"))
+		t, err = template.New("admin_category").Parse(utils.ReadHTMLFileToString(utils.AdminHtmlPath + "adminCategory.html"))
 	} else {
 		//读取.html文件  DEVELOP
-		path := filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath + "adminCategory.html")
-		t, err = template.ParseFiles(path)
+		t, err = template.ParseFiles(GetFilePath("adminCategory.html"))
 	}
 	utils.CheckErr(err)
 	data := utils.GetCommonParamMap()

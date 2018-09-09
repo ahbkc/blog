@@ -1,26 +1,24 @@
 package core
 
 import (
-	"net/http"
-	"html/template"
-	"path/filepath"
-	"utils"
-	"encoding/json"
-	"structs"
 	"crypto/md5"
 	"encoding/hex"
-	"time"
+	"encoding/json"
 	"github.com/mojocn/base64Captcha"
+	"html/template"
+	"net/http"
+	"structs"
+	"time"
+	"utils"
 )
 
 //admin login page --get
 func AdminLoginGet(w http.ResponseWriter, r *http.Request) {
 	if utils.ConfigureMap["BASE"]["ENVIRONMENT"] == "PRODUCT" {
-		t, err = template.New("admin_login").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "adminLogin.html"))
+		t, err = template.New("admin_login").Parse(utils.ReadHTMLFileToString(utils.AdminHtmlPath + "adminLogin.html"))
 	} else {
 		//读取.html文件  DEVELOP
-		path := filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath + "adminLogin.html")
-		t, err = template.ParseFiles(path)
+		t, err = template.ParseFiles(GetFilePath("adminLogin.html"))
 	}
 	utils.CheckErr(err)
 	t.Execute(w, utils.GetCommonParamMap())
@@ -76,12 +74,13 @@ func AdminLoginPost(w http.ResponseWriter, r *http.Request) {
 
 //admin index page  --get
 func AdminIndexGet(w http.ResponseWriter, r *http.Request) {
+	//var tmpl *template.Template
 	if utils.ConfigureMap["BASE"]["ENVIRONMENT"] == "PRODUCT" {
-		t, err = template.New("admin_index").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "adminIndex.html"))
+		t, err = template.New("admin_index").Parse(utils.ReadHTMLFileToString(utils.AdminHtmlPath + "adminIndex.html"))
 	} else {
 		//读取.html文件  DEVELOP
-		path := filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath + "adminIndex.html")
-		t, err = template.ParseFiles(path)
+		t, err = template.ParseFiles(GetFilePath("adminIndex.html"), GetFilePath("admin_header_block.tmpl"),
+			GetFilePath("admin_side_block.tmpl"), GetFilePath("admin_head_block.tmpl"), GetFilePath("admin_footer_block.tmpl"))
 	}
 	utils.CheckErr(err)
 	data := utils.GetCommonParamMap()

@@ -1,0 +1,12 @@
+<div class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+        <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+        {{range $x, $y := .Menus}}
+            <li class="layui-nav-item {{$y.Class}}">
+                <a class="" href="{{$y.Url}}">{{$y.Name}}</a>
+            </li>
+        {{else}}
+                {{end}}
+        </ul>
+    </div>
+</div>
