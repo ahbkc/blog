@@ -79,7 +79,8 @@ func AdminIndexGet(w http.ResponseWriter, r *http.Request) {
 	} else {
 		//读取.html文件  DEVELOP
 		t, err = template.ParseFiles(GetFilePath("adminIndex.html"), GetFilePath("admin_header_block.tmpl"),
-			GetFilePath("admin_side_block.tmpl"), GetFilePath("admin_head_block.tmpl"), GetFilePath("admin_footer_block.tmpl"))
+			GetFilePath("admin_side_block.tmpl"), GetFilePath("admin_head_block.tmpl"),
+			GetFilePath("admin_footer_block.tmpl"), GetFilePath("admin_script_block.tmpl"))
 	}
 	utils.CheckErr(err)
 	t.Execute(w, ComADMRtnVal("Menus", utils.GetMenuList(0), "Article", 100, "Category", 100, "Comment", 100))

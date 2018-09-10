@@ -1,19 +1,59 @@
 package core
 
 import (
-	"net/http"
+	"errors"
 	"github.com/mojocn/base64Captcha"
+	"net/http"
 	"path/filepath"
 	"strings"
 	"utils"
 )
 
+var (
+	ADMRtnMap =  map[string]interface{}{"JsLoginErrMsg": GetMapVal("LOGIN_FAILED"), "ConsoleName": GetMapVal("ADMIN_INDEX_CONSOLE_NAME"),
+"AjaxErrorMsg": GetMapVal("AJAX_ERROR_TIPS_MESSAGE"), "Welcome": GetMapVal("ADMIN_FOOTER_MESSAGE"),
+"ConfirmLogoutTips": GetMapVal("CONFIRM_LOGOUT_TIPS"), "LogoutName": GetMapVal("ADMIN_INDEX_LOGOUT_NAME")}
+	UserRtnMap = make(map[string]interface{})
+)
+
 //file path handel
 func GetFilePath(name string) string {
-	if strings.HasSuffix(name,".tmpl") {
+	if strings.HasSuffix(name, ".tmpl") {
 		return filepath.Join(utils.Dir, "/src/resource", utils.AdminTmplHtmlPath, name)
 	}
-	return filepath.Join(utils.Dir, "/src/resource", utils.AdminHtmlPath, name)
+	if strings.HasPrefix(name, "admin") {
+		return filepath.Join(utils.Dir, "/src/resource", utils.AdminHtmlPath, name)
+	}
+	return filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath, name)
+}
+
+//add a admin page share to return map
+func ComADMRtnVal(s ...interface{}) (m map[string]interface{}) {
+	for i := 0; i != len(s); i +=2 {
+		name := s[i].(string) //如果不是string 类型，则会发生强转失败，导致抛出异常
+		ADMRtnMap[name] = s[i+1]
+	}
+	return ADMRtnMap
+}
+
+//add a front end page share to return map
+func ComUserRtnVal(s ...interface{}) (m map[string]interface{}) {
+	for i := 0; i != len(s); i +=2 {
+		name := s[i].(string) //如果不是string 类型，则会发生强转失败，导致抛出异常
+		UserRtnMap[name] = s[i+1]
+	}
+	return UserRtnMap
+}
+
+//simplify getting values from configuration files
+func GetMapVal(s string) string {
+	if v1 := utils.ConfigureMap[s]; v1 != "" {
+		return v1
+	} else if v2 := utils.LanguageMap[s]; v2 != "" {
+		return v2
+	} else {
+		panic(errors.New("no Match Value"))
+	}
 }
 
 //output verifyCode picture

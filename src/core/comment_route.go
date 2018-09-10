@@ -15,7 +15,7 @@ import (
 func CommentLeaveMsg(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	if len(vars) <= 0 {
-		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: utils.LanguageMap["API_MESSAGE"]["PARAMETERS_CANNOT_BE_EMPTY"]})
+		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
 		return
 	}
 
@@ -29,12 +29,12 @@ func CommentLeaveMsg(w http.ResponseWriter, r *http.Request) {
 
 	//判断是否有值
 	if len(name) <= 0 || len(mail) <= 0 || len(address) <= 0 || len(leaveMsg) <= 0 {
-		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: utils.LanguageMap["API_MESSAGE"]["PARAMETERS_CANNOT_BE_EMPTY"]})
+		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
 		return
 	}
 
 	id := vars["id"]
-	db, err := gorm.Open(utils.ConfigureMap["DATABASE"]["dialect"], utils.Dir+utils.ConfigureMap["DATABASE"]["db_path"])
+	db, err := gorm.Open(GetMapVal("dialect"), utils.Dir + GetMapVal("db_path"))
 	utils.CheckErr(err)
 	//disabled mores table
 	db.SingularTable(true)
@@ -53,6 +53,6 @@ func CommentLeaveMsg(w http.ResponseWriter, r *http.Request) {
 		RelevancyId: id,
 	}).Error
 	utils.CheckErr(err)
-	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: utils.LanguageMap["API_MESSAGE"]["EXECUTION_SUCCESS"]})
+	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 	return
 }

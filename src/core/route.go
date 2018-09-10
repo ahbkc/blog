@@ -247,13 +247,12 @@ func NotFundHandler(w http.ResponseWriter, r *http.Request) {
 </body>
 </html>`
 	t, _ := template.New("404").Parse(tpl)
-	pageMap := utils.ConfigureMap["PAGE"]
 	var data = struct {
 		Title   string
 		ERR_404 string
 	}{
 		"404 page",
-		strings.Replace(pageMap["404_PICTURE"], "++", r.Host, 1),
+		strings.Replace(GetMapVal("404_PICTURE"), "++", r.Host, 1),
 	}
 	t.Execute(w, data)
 }

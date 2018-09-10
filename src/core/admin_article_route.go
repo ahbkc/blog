@@ -23,16 +23,16 @@ var (
 //admin article manage page
 func AdminArticleGet(w http.ResponseWriter, r *http.Request) {
 	//PRODUCT  从打包的静态文件中获取文件
-	if utils.ConfigureMap["BASE"]["ENVIRONMENT"] == "PRODUCT" {
+	if GetMapVal("ENVIRONMENT") == "PRODUCT" {
 		t, err = template.New("admin_article").Parse(utils.ReadHTMLFileToString(utils.AdminHtmlPath + "adminArticle.html"))
 	} else {
 		//读取.html文件  DEVELOP
-		t, err = template.ParseFiles(GetFilePath("adminArticle.html"))
+		t, err = template.ParseFiles(GetFilePath("adminArticle.html"), GetFilePath("admin_header_block.tmpl"),
+			GetFilePath("admin_side_block.tmpl"), GetFilePath("admin_head_block.tmpl"),
+			GetFilePath("admin_footer_block.tmpl"), GetFilePath("admin_script_block.tmpl"))
 	}
 	utils.CheckErr(err)
-	data := utils.GetCommonParamMap()
-	data["Menus"] = utils.GetMenuList(2)
-	t.Execute(w, data)
+	t.Execute(w, ComADMRtnVal("Menus", utils.GetMenuList(2)))
 }
 
 //the foreground gets data asynchronously
@@ -43,10 +43,10 @@ func AdminGetArticleListAjaxPOST(w http.ResponseWriter, r *http.Request) {
 	page := r.PostForm["page"][0]
 	limit := r.PostForm["limit"][0]
 	if len(page) <= 0 || len(limit) <= 0 {
-		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: utils.LanguageMap["API_MESSAGE"]["PAGING_PARAMETER_IS_EMPTY"]})
+		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PAGING_PARAMETER_IS_EMPTY")})
 		return
 	}
-	db, err := gorm.Open(utils.ConfigureMap["DATABASE"]["dialect"], utils.Dir+utils.ConfigureMap["DATABASE"]["db_path"])
+	db, err := gorm.Open(GetMapVal("dialect"), utils.Dir + GetMapVal("db_path"))
 	utils.CheckErr(err)
 	defer db.Close()
 	var articles []structs.Article
@@ -80,7 +80,7 @@ func AdminAddArticleAddAjaxPost(w http.ResponseWriter, r *http.Request) {
 	_, err = picture.Read(buff)
 	utils.CheckErr(err)
 	if len(title) <= 0 || len(content) <= 0 {
-		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: utils.LanguageMap["API_MESSAGE"]["PARAMETERS_CANNOT_BE_EMPTY"]})
+		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
 		return
 	}
 	//save article picture
@@ -96,11 +96,11 @@ func AdminAddArticleAddAjaxPost(w http.ResponseWriter, r *http.Request) {
 	//get img upload path from jsonFile
 	//path := "/img/article/" + uuids.String() + suffix  //picture path
 	uploadFolder := "article" //picture folder
-	staticPath := utils.ConfigureMap["FILE_PATH"]["STATIC_FILE"]
+	staticPath := GetMapVal("STATIC_FILE")
 	realPath := staticPath + "/" + uploadFolder + "/" + uuids.String() + suffix
 	err = ioutil.WriteFile(utils.Dir+realPath, buff, 0666)
 	utils.CheckErr(err)
-	db, err := gorm.Open(utils.ConfigureMap["DATABASE"]["dialect"], utils.Dir+utils.ConfigureMap["DATABASE"]["db_path"])
+	db, err := gorm.Open(GetMapVal("dialect"), utils.Dir+GetMapVal("db_path"))
 	utils.CheckErr(err)
 	//禁用复数形式表名
 	db.SingularTable(true)
@@ -113,7 +113,7 @@ func AdminAddArticleAddAjaxPost(w http.ResponseWriter, r *http.Request) {
 		CreatedAt: time.Now().Format("2006-01-02 15:04:05"),
 	}).Error
 	utils.CheckErr(err)
-	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: utils.LanguageMap["API_MESSAGE"]["EXECUTION_SUCCESS"]})
+	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 	return
 }
 
@@ -123,10 +123,10 @@ func AdminDelArticleDelAjaxPost(w http.ResponseWriter, r *http.Request) {
 	utils.CheckErr(err)
 	id := r.FormValue("id")
 	if len(id) <= 0 {
-		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: utils.LanguageMap["API_MESSAGE"]["PARAMETERS_CANNOT_BE_EMPTY"]})
+		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
 		return
 	}
-	db, err := gorm.Open(utils.ConfigureMap["DATABASE"]["dialect"], utils.Dir+utils.ConfigureMap["DATABASE"]["db_path"])
+	db, err := gorm.Open(GetMapVal("dialect"), utils.Dir + GetMapVal("db_path"))
 	utils.CheckErr(err)
 	//disabled mores table
 	db.SingularTable(true)
@@ -137,10 +137,10 @@ func AdminDelArticleDelAjaxPost(w http.ResponseWriter, r *http.Request) {
 	if article.Id != "" {
 		err = db.Delete(&article).Error
 		utils.CheckErr(err)
-		json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: utils.LanguageMap["API_MESSAGE"]["EXECUTION_SUCCESS"]})
+		json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 		return
 	}
-	json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: utils.LanguageMap["API_MESSAGE"]["EXECUTION_FAILED"]})
+	json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: GetMapVal("EXECUTION_FAILED")})
 	return
 }
 
@@ -170,7 +170,7 @@ func AdminEditArticleEditAjaxPost(w http.ResponseWriter, r *http.Request) {
 		_, err = picture.Read(buff)
 		utils.CheckErr(err)
 		if len(title) <= 0 || len(content) <= 0 {
-			json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: utils.LanguageMap["API_MESSAGE"]["PARAMETERS_CANNOT_BE_EMPTY"]})
+			json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
 			return
 		}
 		//save article picture
@@ -185,7 +185,7 @@ func AdminEditArticleEditAjaxPost(w http.ResponseWriter, r *http.Request) {
 		utils.CheckErr(err)
 
 		uploadFolder := "article" //picture folder
-		staticPath := utils.ConfigureMap["FILE_PATH"]["STATIC_FILE"]
+		staticPath := GetMapVal("STATIC_FILE")
 		realPath = staticPath + "/" + uploadFolder + "/" + uuids.String() + suffix
 		err = ioutil.WriteFile(utils.Dir+realPath, buff, 0666)
 		utils.CheckErr(err)
@@ -193,7 +193,7 @@ func AdminEditArticleEditAjaxPost(w http.ResponseWriter, r *http.Request) {
 		utils.CheckErr(err)
 	}
 
-	db, err := gorm.Open(utils.ConfigureMap["DATABASE"]["dialect"], utils.Dir+utils.ConfigureMap["DATABASE"]["db_path"])
+	db, err := gorm.Open(GetMapVal("dialect"), utils.Dir + GetMapVal("db_path"))
 	utils.CheckErr(err)
 	//disabled mores table
 	db.SingularTable(true)
@@ -202,7 +202,7 @@ func AdminEditArticleEditAjaxPost(w http.ResponseWriter, r *http.Request) {
 	err = db.Where("id = ?", id).First(&article).Error
 	utils.CheckErr(err)
 	if article.Id == "" {
-		json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: utils.LanguageMap["API_MESSAGE"]["DATA_DOES_NOT_EXIST"]})
+		json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: GetMapVal("DATA_DOES_NOT_EXIST")})
 		return
 	}
 	if realPath == "" {
@@ -210,7 +210,7 @@ func AdminEditArticleEditAjaxPost(w http.ResponseWriter, r *http.Request) {
 	}
 	err = db.Model(&article).Updates(structs.Article{Title: title, Content: template.HTML(content), Picture: strings.Replace(realPath, "image", "img", -1), UpdatedAt: time.Now().Format("2006-01-02 15:04:05")}).Error
 	utils.CheckErr(err)
-	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: utils.LanguageMap["API_MESSAGE"]["EXECUTION_SUCCESS"]})
+	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 	return
 }
 
@@ -224,11 +224,11 @@ func AdminEditArticleEditStateAjaxPost(w http.ResponseWriter, r *http.Request) {
 	utils.CheckErr(err)
 
 	if len(id) <= 0 {
-		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: utils.LanguageMap["API_MESSAGE"]["PARAMETERS_CANNOT_BE_EMPTY"]})
+		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
 		return
 	}
 
-	db, err := gorm.Open(utils.ConfigureMap["DATABASE"]["dialect"], utils.Dir+utils.ConfigureMap["DATABASE"]["db_path"])
+	db, err := gorm.Open(GetMapVal("dialect"), utils.Dir + GetMapVal("db_path"))
 	utils.CheckErr(err)
 	//disabled mores table
 	db.SingularTable(true)
@@ -239,8 +239,8 @@ func AdminEditArticleEditStateAjaxPost(w http.ResponseWriter, r *http.Request) {
 	if article.Id != "" {
 		err = db.Model(&article).Update("State", state).Error
 		utils.CheckErr(err)
-		json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: utils.LanguageMap["API_MESSAGE"]["EXECUTION_SUCCESS"]})
+		json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 		return
 	}
-	json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: utils.LanguageMap["API_MESSAGE"]["EXECUTION_FAILED"]})
+	json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: GetMapVal("EXECUTION_FAILED")})
 }
