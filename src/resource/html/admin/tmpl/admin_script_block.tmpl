@@ -1,0 +1,39 @@
+<script src="/resource/plugins/layui/layui.js"></script>
+<script>
+    //JavaScript代码区域
+    let $;
+    let layer;
+    layui.use(['layer'], function () {
+        $ = layui.jquery;
+        layer = layui.layer;
+    });
+
+    let logout = function () {
+        //弹出confirm窗口
+        layer.confirm('{{.ConfirmLogoutTips}}？', {
+            btn: ['确定', '取消'], title: '退出确认', anim: 1, area: ['500px', '300px'] //按钮
+        }, function () {
+            $.ajax({
+                type: 'POST',
+                url: '/admin/logout_ajax',
+                data: {},
+                contentType: 'application/x-www-form-urlencoded',
+                dataType: 'json',
+                async: true,
+                success: function (result, textStatus) {
+                    if (result.code != 100) {
+                        layer.msg(result.msg)
+                    } else if (result.code == 100) {
+                        layer.msg(result.msg);
+                        setTimeout(function () {
+                            window.location.href = result.data;
+                        }, 1000)
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    layer.msg('{{.AjaxErrorMsg}}')
+                }
+            })
+        });
+    };
+</script>
