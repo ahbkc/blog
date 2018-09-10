@@ -11,7 +11,6 @@
         .layui-form-item {
             padding: 10px;
         }
-
         label {
             color: white;
         }
@@ -84,12 +83,15 @@
                     dataType: 'json',
                     success: function (result, textStatus) {
                         if(result.code != 100) {
-                            layer.msg(result.msg)
+                            layer.msg(result.msg, {time: 1500}, function () {
+                                var img =document.getElementById("imgId");
+                                img.src=img.src+"?"+ Math.random();
+                            })
+
                         }else if (result.code == 100) {
-                            layer.msg(result.msg);
-                            setTimeout(function () {
+                            layer.msg(result.msg, {time: 1500}, function () {
                                 window.location.href = result.data;
-                            }, 1000)
+                            });
                         }
                     },
                     error : function (XMLHttpRequest, textStatus, errorThrown) {
