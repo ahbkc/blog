@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+{{template "head_block.tmpl" .}}
+<body style="background-color: #f7f7f7!important;overflow-x: hidden;">
+{{template "header_block.tmpl" .}}
+<div class="layui-main">
+    <div class="layui-fluid layui-col-space30 layui-clear">
+    {{range $x, $y := .List}}
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+            <div class="inner-container">
+                <a href="/detail/{{$y.Id}}.html">
+                    <div class="image">
+                        <img class="show-image" src="{{$y.Picture}}" alt="image"/>
+                    </div>
+                    <span class="article-title">{{$y.Title}}</span>
+                </a>
+            </div>
+        </div>
+    {{else}}
+         {{"not row"}}
+    {{end}}
+    </div>
+{{template "page_block.tmpl" .}}
+</div>
+{{template "script_block.tmpl" .}}
+</body>
+</html>

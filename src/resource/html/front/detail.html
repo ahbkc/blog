@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+{{template "head_block.tmpl" .}}
+<body style="background-color: #f7f7f7!important;overflow-x: hidden;">
+{{template "header_block.tmpl" .}}
+<div class="layui-main">
+    <div class="title">
+        <!-- 标题 -->
+        <h3>{{.Detail.Title}}</h3>
+    </div>
+    <div class="content">
+        <!-- 内容 -->
+        <div class="post-content">
+        {{.Detail.Content}}
+        </div>
+    </div>
+    {{template "inner_comment_block.tmpl" .}}
+</div>
+{{template "script_block.tmpl" .}}
+</body>
+</html>

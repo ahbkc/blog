@@ -1,0 +1,38 @@
+<div class="comment">
+        <!-- 评论 -->
+        <div class="leave-message">
+            <div class="inputInfo">
+                <input name="name" id="name" autocomplete="off" class="layui-input" placeholder="姓名"/>
+                <input name="mail" id="mail" autocomplete="off" class="layui-input" placeholder="邮箱">
+                <input name="address" id="address" autocomplete="off" class="layui-input" placeholder="网址">
+            </div>
+            <div class="textarea-input">
+                <textarea name="leaveMsg" id="leaveMsg"
+                          style="width: 100%;resize: none;height: 150px;border-color: #e6e6e6;border-top: white;"></textarea>
+            </div>
+            <div class="btn" style="text-align: right">
+                <button class="layui-btn layui-btn-primary" id="submit">提交</button>
+            </div>
+        </div>
+        <div class="comment-list">
+            <div class="list-container">
+            {{range $x, $y := .Comments}}
+                <div class="item-show">
+                    <div class="img">
+                        <img src="/img/avatar.png" class="layui-nav-img"/>
+                        <div class="avatar" style="display: inline-block">
+                            <span>{{$y.CommentUserName | html}}</span>
+                        </div>
+                    </div>
+                    <div class="item-comment">
+                        <p>{{$y.CommentUserContent | html}}</p>
+                    </div>
+                    <span class="date">{{$y.CreatedAt}}</span>
+                </div>
+            {{else}}
+                {{"not row"}}
+            {{end}}
+            </div>
+        </div>
+</div>
+<div id="page"></div>

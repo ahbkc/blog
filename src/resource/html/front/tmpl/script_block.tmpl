@@ -1,0 +1,49 @@
+<script src="/resource/plugins/layui/layui.js"></script>
+<script>
+    layui.use(['element', 'layer', 'laypage'], function () {
+        var element = layui.element;
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var laypage = layui.laypage;
+
+        laypage.render({
+            elem: 'page'
+            ,count: {{.PAGE_Count}}
+            ,curr: {{.PAGE_Curr}}
+            ,jump: function(obj, first){
+                if(!first){
+                    window.location.href = "/detail/{{.Detail.Id}}.html?page="+ obj.curr;  //分页跳转
+                }
+            }
+        });
+
+        //响应点击提交操作
+        $("#submit").on("click", function () {
+            var name = $("#name");
+            var mail = $("#mail");
+            var address = $("#address");
+            var leaveMsg = $("#leaveMsg");
+
+            if ((name === undefined || name.val() == '') || (mail === undefined || mail.val() == '') || (address === null || address.val() == '') || (leaveMsg === undefined || leaveMsg.val() == '')) {
+                layer.msg('请输入姓名、邮箱、网址、评论内容!');
+            } else {
+                var params = {
+                    "name": name.val(),
+                    "mail": mail.val(),
+                    "address": address.val(),
+                    "leaveMsg": leaveMsg.val()
+                };
+                //提交请求
+                $.post('/comment/{{.Detail.Id}}_ajax', params, function (result) {
+                    if (result && result.code != '100') {
+                        layer.msg(result.msg);
+                    } else {
+                        layer.msg(result.msg, {time: 1500}, function () {
+                            window.location.reload(); //重加载当前页
+                        })
+                    }
+                }, 'json')
+            }
+        })
+    });
+</script>
