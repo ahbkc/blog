@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
@@ -20,7 +19,7 @@ const (
 	configureFileName = "/configure.json"
 	languageRootPath  = "/language"
 	AdminHtmlPath = "/html/admin/"
-	HtmlPath = "/html/"
+	HtmlPath = "/html/front/"
 	AdminTmplHtmlPath = "/html/admin/tmpl/"
 )
 
@@ -136,16 +135,6 @@ func GetMenuList(flag uint8) []structs.Menu {
 	}
 	menus[flag].Class = "layui-this"
 	return menus
-}
-
-//Read files from statik
-func ReadHTMLFileToString(path string) string {
-	file, err := StatikFS.Open(path)
-	CheckErr(err)
-	defer file.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(file)
-	return buf.String()
 }
 
 func getMapVal(s string) string {
