@@ -1,47 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>{{.Title}}</title>
-    <link rel="icon" href="/img/avatar.png">
-    <link rel="stylesheet" href="/resource/plugins/layui/css/layui.css">
-</head>
+{{template "admin_head_block.tmpl" .}}
 <body class="layui-layout-body">
 <div class="layui-layout layui-layout-admin">
-    <div class="layui-header">
-        <div class="layui-logo">{{.ConsoleName}}</div>
-        <ul class="layui-nav layui-layout-right">
-            <li class="layui-nav-item">
-                <a href="javascript:;">
-                    <img src="/img/avatar.png" class="layui-nav-img">
-                {{.UserName}}
-                </a>
-            </li>
-            <li class="layui-nav-item"><a href="javascript:logout();">{{.LogoutName}}</a></li>
-        </ul>
-    </div>
-
-    <div class="layui-side layui-bg-black">
-        <div class="layui-side-scroll">
-            <ul class="layui-nav layui-nav-tree"  lay-filter="test">
-            {{range $x, $y := .Menus}}
-                <li class="layui-nav-item {{$y.Class}}">
-                    <a class="" href="{{$y.Url}}">{{$y.Name}}</a>
-                </li>
-            {{else}}
-                {{end}}
-            </ul>
-        </div>
-    </div>
-
+{{template "admin_header_block.tmpl" .}}
+{{template "admin_side_block.tmpl" .}}
     <div class="layui-body">
         <div style="padding: 15px;">
             <div id="toolbar">
                 <div  style="text-align: right;">
                     <div class="layui-btn-container">
-                        <button id="searchBtn" class="layui-btn layui-btn-primary">search</button>
-                        <button id="addBtn" class="layui-btn">add</button>
+                        <button id="searchBtn" class="layui-btn layui-btn-primary">搜索</button>
+                        <button id="addBtn" class="layui-btn">添加</button>
                         <button id="exportBtn" class="layui-btn"><i class="layui-icon">&#xe601;</i></button>
                     </div>
                 </div>
@@ -51,15 +21,10 @@
             </div>
         </div>
     </div>
-
-    <div class="layui-footer">
-        © ahbkc - {{.Welcome}}
-    </div>
+{{template "admin_footer_block.tmpl" .}}
 </div>
-<script src="/resource/plugins/layui/layui.js"></script>
+{{template "admin_script_block.tmpl" .}}
 <script>
-    let $;
-    let layer;
     var grid;
     var selectLineData;
     var popIndex;
@@ -77,12 +42,12 @@
             ,cols: [[
                 {type:'checkbox'}
                 ,{field: 'Id', title: 'ID', width:300}
-                ,{field: 'CName', title: 'categoryName', width:100}
-                ,{field: 'CDescribe', title: 'categoryDescribe'}
-                ,{field: 'ArticleCount', title: 'articleCount', width:90}
-                ,{field: 'UpdatedAt', title: 'lastUpdateTime', sort: true}
-                ,{field: 'CreatedAt', title: 'createTime', sort: true}
-                ,{fixed: 'right', width:150, align:'center', title: 'operation', toolbar: '#barDemo'}
+                ,{field: 'CName', title: '分类名称', width:100}
+                ,{field: 'CDescribe', title: '分类说明'}
+                ,{field: 'ArticleCount', title: '文章数量', width:90}
+                ,{field: 'UpdatedAt', title: '最后更新', sort: true}
+                ,{field: 'CreatedAt', title: '创建时间', sort: true}
+                ,{fixed: 'right', width:150, align:'center', title: '操作', toolbar: '#barDemo'}
             ]]
             ,where: {
                 keyword: ""
@@ -254,34 +219,6 @@
         })
     });
 
-    let logout = function () {
-        layer.confirm('{{.ConfirmLogoutTips}}？', {
-            btn: ['enter','cancel'], title: '退出确认', anim: 1, area: ['500px', '300px']
-        }, function(){
-            $.ajax({
-                type: 'POST',
-                url: '/admin/logout_ajax',
-                data: {},
-                contentType: 'application/x-www-form-urlencoded',
-                dataType: 'json',
-                async: true,
-                success: function (result, textStatus) {
-                    if (result.code != 100) {
-                        layer.msg(result.msg)
-                    } else if (result.code == 100) {
-                        layer.msg(result.msg);
-                        setTimeout(function () {
-                            window.location.href = result.data;
-                        }, 1000)
-                    }
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    layer.msg('{{.AJAX_ERROR_TIPS_MESSAGE}}')
-                }
-            })
-        });
-    };
-
     function getPopFormat(flag, categoryName, categoryDescribe) {
         if (categoryName === undefined || categoryDescribe === undefined) {
             categoryName = '';categoryDescribe = '';
@@ -313,9 +250,9 @@
     }
 </script>
 <script type="text/html" id="barDemo">
-    <a class="layui-btn layui-btn-xs" lay-event="detail">show</a>
-    <a class="layui-btn layui-btn-xs" lay-event="edit">edit</a>
-    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">del</a>
+    <a class="layui-btn layui-btn-xs" lay-event="detail">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
 </script>
 </body>
 </html>
