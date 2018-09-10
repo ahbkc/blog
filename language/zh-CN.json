@@ -1,30 +1,23 @@
 {
-  "GENERAL" : {
-    "LOGIN_ERROR_MESSAGE" : "登陆错误",
-    "WrongInputValue" : "输入值错误"
-  },
-  "API_MESSAGE": {
-    "PARAMETERS_CANNOT_BE_EMPTY" : "参数不能为空",
-    "LOGIN_SUCCESS" : "登陆后台成功",
-    "LOGIN_FAILED" : "登陆后台失败",
-    "USERNAME_OR_PASSWORD_IS_INCORRECT" : "用户名或密码错误",
-    "EXECUTION_SUCCESS": "执行成功",
-    "EXECUTION_FAILED" : "执行失败",
-    "PAGING_PARAMETER_IS_EMPTY" : "分页参数为空",
-    "DATA_DOES_NOT_EXIST" : "数据不存在",
-    "VerifyCode_Error" : "验证码错误",
-    "AccountHasBeenLoggedIn" : "账号已登陆"
-  },
-  "PAGE": {
-    "ADMIN_LOGIN_TITLE" : "管理员后台登陆",
-    "ADMIN_INDEX_CONSOLE_NAME": "管理员控制台",
-    "CONFIRM_LOGOUT_TIPS" : "确认要退出吗？",
-    "AJAX_ERROR_TIPS_MESSAGE" : "执行异常",
-    "ADMIN_INDEX_TITLE" : "博客后台管理首页",
-    "ADMIN_INDEX_LOGOUT_NAME" : "退出",
-    "ADMIN_FOOTER_MESSAGE" : "欢迎登陆管理页面",
-    "MENU_CATEGORY" : "分类管理",
-    "MENU_ARTICLE" : "文章管理",
-    "MENU_INDEX" : "首页"
-  }
+  "LOGIN_ERROR_MESSAGE": "登陆错误",
+  "WrongInputValue": "输入值错误",
+  "PARAMETERS_CANNOT_BE_EMPTY": "参数不能为空",
+  "LOGIN_SUCCESS": "登陆后台成功",
+  "LOGIN_FAILED": "登陆后台失败",
+  "USERNAME_OR_PASSWORD_IS_INCORRECT": "用户名或密码错误",
+  "EXECUTION_SUCCESS": "执行成功",
+  "EXECUTION_FAILED": "执行失败",
+  "PAGING_PARAMETER_IS_EMPTY": "分页参数为空",
+  "DATA_DOES_NOT_EXIST": "数据不存在",
+  "VerifyCode_Error": "验证码错误",
+  "AccountHasBeenLoggedIn": "账号已登陆",
+  "ADMIN_INDEX_CONSOLE_NAME": "管理员控制台",
+  "CONFIRM_LOGOUT_TIPS": "确认要退出吗？",
+  "AJAX_ERROR_TIPS_MESSAGE": "执行异常",
+  "ADMIN_INDEX_TITLE": "博客后台管理首页",
+  "ADMIN_INDEX_LOGOUT_NAME": "退出",
+  "ADMIN_FOOTER_MESSAGE": "欢迎登陆管理页面",
+  "MENU_CATEGORY": "分类管理",
+  "MENU_ARTICLE": "文章管理",
+  "MENU_INDEX": "首页"
 }
