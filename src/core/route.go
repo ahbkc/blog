@@ -6,6 +6,7 @@ import (
 	"github.com/rakyll/statik/fs"
 	"html/template"
 	"net/http"
+	"path/filepath"
 	"regexp"
 	_ "statik"
 	"strings"
@@ -166,8 +167,11 @@ func NewRouter() *mux.Router {
 	}
 	utils.StatikFS = statikFS //赋值
 
+	//router.PathPrefix("/resource/").Methods("GET").Name("resource").
+	//	Handler(http.StripPrefix("/resource", http.FileServer(utils.StatikFS))) //static file path
+
 	router.PathPrefix("/resource/").Methods("GET").Name("resource").
-		Handler(http.StripPrefix("/resource", http.FileServer(utils.StatikFS))) //static file path
+		Handler(http.StripPrefix("/resource", http.FileServer(http.Dir(filepath.Join(utils.Dir, "/src/resource"))))) //static file path
 
 	router.PathPrefix("/img/").Methods("GET").Name("img").
 		Handler(http.StripPrefix("/img/", http.FileServer(http.Dir(utils.Dir+"/image"))))
