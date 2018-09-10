@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"text/template"
 	"utils"
 )
 
@@ -14,17 +15,43 @@ var (
 "AjaxErrorMsg": GetMapVal("AJAX_ERROR_TIPS_MESSAGE"), "Welcome": GetMapVal("ADMIN_FOOTER_MESSAGE"),
 "ConfirmLogoutTips": GetMapVal("CONFIRM_LOGOUT_TIPS"), "LogoutName": GetMapVal("ADMIN_INDEX_LOGOUT_NAME")}
 	UserRtnMap = make(map[string]interface{})
+	t *template.Template
+	err error
 )
 
 //file path handel
 func GetFilePath(name string) string {
-	if strings.HasSuffix(name, ".tmpl") {
+	if strings.HasPrefix(name, "admin") && strings.HasSuffix(name, ".tmpl") {
 		return filepath.Join(utils.Dir, "/src/resource", utils.AdminTmplHtmlPath, name)
 	}
 	if strings.HasPrefix(name, "admin") {
 		return filepath.Join(utils.Dir, "/src/resource", utils.AdminHtmlPath, name)
 	}
 	return filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath, name)
+}
+
+//初始化template
+func initTmpl(n string) (tpl *template.Template, err error) {
+	var path, f string
+	if strings.HasPrefix(n, "admin") {
+		path = filepath.Join(utils.Dir, "/src/resource", utils.AdminHtmlPath)
+	} else {
+		path = filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath)
+	}
+	if GetMapVal("ENVIRONMENT") == "PRODUCT" {
+		return
+	}
+	f = filepath.Join(path, n)
+	path = filepath.Join(path, "tmpl", "*.tmpl")
+	tpl, err = template.ParseGlob(path)
+	if err != nil {
+		return
+	}
+	tpl, err = tpl.New(n).ParseFiles(f)
+	if err != nil {
+		return
+	}
+	return
 }
 
 //add a admin page share to return map
@@ -55,6 +82,7 @@ func GetMapVal(s string) string {
 		panic(errors.New("no Match Value"))
 	}
 }
+
 
 //output verifyCode picture
 func VerifyCodeGenerate(w http.ResponseWriter, r *http.Request) {
