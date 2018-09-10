@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"github.com/mojocn/base64Captcha"
-	"html/template"
 	"net/http"
 	"structs"
 	"time"
@@ -14,12 +13,7 @@ import (
 
 //admin login page --get
 func AdminLoginGet(w http.ResponseWriter, r *http.Request) {
-	if GetMapVal("ENVIRONMENT") == "PRODUCT" {
-		t, err = template.New("admin_login").Parse(utils.ReadHTMLFileToString(utils.AdminHtmlPath + "adminLogin.html"))
-	} else {
-		//读取.html文件  DEVELOP
-		t, err = template.ParseFiles(GetFilePath("adminLogin.html"))
-	}
+	t, err = initTmpl("adminLogin.html")
 	utils.CheckErr(err)
 	t.Execute(w, ComADMRtnVal())
 }
@@ -74,14 +68,7 @@ func AdminLoginPost(w http.ResponseWriter, r *http.Request) {
 
 //admin index page  --get
 func AdminIndexGet(w http.ResponseWriter, r *http.Request) {
-	if GetMapVal("ENVIRONMENT") == "PRODUCT" {
-		t, err = template.New("admin_index").Parse(utils.ReadHTMLFileToString(utils.AdminHtmlPath + "adminIndex.html"))
-	} else {
-		//读取.html文件  DEVELOP
-		t, err = template.ParseFiles(GetFilePath("adminIndex.html"), GetFilePath("admin_header_block.tmpl"),
-			GetFilePath("admin_side_block.tmpl"), GetFilePath("admin_head_block.tmpl"),
-			GetFilePath("admin_footer_block.tmpl"), GetFilePath("admin_script_block.tmpl"))
-	}
+	t, err = initTmpl("adminIndex.html")
 	utils.CheckErr(err)
 	t.Execute(w, ComADMRtnVal("Menus", utils.GetMenuList(0), "Article", 100, "Category", 100, "Comment", 100))
 	return

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/jinzhu/gorm"
 	"github.com/satori/go.uuid"
-	"html/template"
 	"net/http"
 	"strconv"
 	"structs"
@@ -14,14 +13,7 @@ import (
 
 //admin category manage page
 func AdminCategoryGet(w http.ResponseWriter, r *http.Request) {
-	if GetMapVal("ENVIRONMENT") == "PRODUCT" {
-		t, err = template.New("admin_category").Parse(utils.ReadHTMLFileToString(utils.AdminHtmlPath + "adminCategory.html"))
-	} else {
-		//读取.html文件  DEVELOP
-		t, err = template.ParseFiles(GetFilePath("adminCategory.html"), GetFilePath("admin_header_block.tmpl"),
-			GetFilePath("admin_side_block.tmpl"), GetFilePath("admin_head_block.tmpl"),
-			GetFilePath("admin_footer_block.tmpl"), GetFilePath("admin_script_block.tmpl"))
-	}
+	t, err = initTmpl("adminCategory.html")
 	utils.CheckErr(err)
 	t.Execute(w, ComADMRtnVal("Menus", utils.GetMenuList(1)))
 }

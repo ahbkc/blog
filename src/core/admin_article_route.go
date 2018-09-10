@@ -15,22 +15,10 @@ import (
 	"utils"
 )
 
-var (
-	t   *template.Template
-	err error
-)
 
 //admin article manage page
 func AdminArticleGet(w http.ResponseWriter, r *http.Request) {
-	//PRODUCT  从打包的静态文件中获取文件
-	if GetMapVal("ENVIRONMENT") == "PRODUCT" {
-		t, err = template.New("admin_article").Parse(utils.ReadHTMLFileToString(utils.AdminHtmlPath + "adminArticle.html"))
-	} else {
-		//读取.html文件  DEVELOP
-		t, err = template.ParseFiles(GetFilePath("adminArticle.html"), GetFilePath("admin_header_block.tmpl"),
-			GetFilePath("admin_side_block.tmpl"), GetFilePath("admin_head_block.tmpl"),
-			GetFilePath("admin_footer_block.tmpl"), GetFilePath("admin_script_block.tmpl"))
-	}
+	t, err = initTmpl("adminArticle.html")
 	utils.CheckErr(err)
 	t.Execute(w, ComADMRtnVal("Menus", utils.GetMenuList(2)))
 }
@@ -216,7 +204,7 @@ func AdminEditArticleEditAjaxPost(w http.ResponseWriter, r *http.Request) {
 
 //edit article state
 func AdminEditArticleEditStateAjaxPost(w http.ResponseWriter, r *http.Request) {
-	err = r.ParseForm()
+	err := r.ParseForm()
 	utils.CheckErr(err)
 
 	id := strings.TrimSpace(r.FormValue("id"))

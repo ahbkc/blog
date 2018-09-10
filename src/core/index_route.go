@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
-	"html/template"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -15,15 +14,8 @@ import (
 
 //index page
 func IndexGet(w http.ResponseWriter, r *http.Request) {
-	//PRODUCT  从打包的静态文件中获取文件
-	if GetMapVal("ENVIRONMENT") == "PRODUCT" {
-		t, err = template.New("index").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "index.html"))
-	} else {
-		//读取.html文件  DEVELOP
-		t, err = template.ParseFiles(GetFilePath("index.html"))
-	}
+	t, err = initTmpl("index.html")
 	utils.CheckErr(err)
-
 	var page string
 	paramVal, err := url.ParseQuery(r.URL.RawQuery)
 	utils.CheckErr(err)
@@ -31,7 +23,6 @@ func IndexGet(w http.ResponseWriter, r *http.Request) {
 	if len(paramVal) <= 0 || len(paramVal["page"]) < 0 {
 		page = "1"
 	}
-
 	if page == "" {
 		page = paramVal["page"][0]
 	}
@@ -77,21 +68,14 @@ func IndexGet(w http.ResponseWriter, r *http.Request) {
 
 //detail page
 func DetailPageGet(w http.ResponseWriter, r *http.Request) {
-	if GetMapVal("ENVIRONMENT") == "PRODUCT" {
-		t, err = template.New("detail").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "detail.html"))
-	} else {
-		//读取.html文件  DEVELOP
-		t, err = template.ParseFiles(GetFilePath("detail.html"))
-	}
+	t, err = initTmpl("detail.html")
 	utils.CheckErr(err)
 	vars := mux.Vars(r)
 	if len(vars) <= 0 {
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
 		return
 	}
-
 	var page string
-
 	paramVal, err := url.ParseQuery(r.URL.RawQuery)
 	utils.CheckErr(err)
 
@@ -148,12 +132,7 @@ func DetailPageGet(w http.ResponseWriter, r *http.Request) {
 
 //about
 func GetAboutPage(w http.ResponseWriter, r *http.Request) {
-	if GetMapVal("ENVIRONMENT") == "PRODUCT" {
-		t, err = template.New("about").Parse(utils.ReadHTMLFileToString(utils.HtmlPath + "about.html"))
-	} else {
-		//读取.html文件  DEVELOP
-		t, err = template.ParseFiles(GetFilePath("about.html"))
-	}
+	t, err = initTmpl("about.html")
 	utils.CheckErr(err)
 
 	var page string       //default 1
