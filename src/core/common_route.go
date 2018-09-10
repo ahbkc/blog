@@ -19,17 +19,6 @@ var (
 	err error
 )
 
-//file path handel
-func GetFilePath(name string) string {
-	if strings.HasPrefix(name, "admin") && strings.HasSuffix(name, ".tmpl") {
-		return filepath.Join(utils.Dir, "/src/resource", utils.AdminTmplHtmlPath, name)
-	}
-	if strings.HasPrefix(name, "admin") {
-		return filepath.Join(utils.Dir, "/src/resource", utils.AdminHtmlPath, name)
-	}
-	return filepath.Join(utils.Dir, "/src/resource", utils.HtmlPath, name)
-}
-
 //初始化template
 func initTmpl(n string) (tpl *template.Template, err error) {
 	var path, f string
