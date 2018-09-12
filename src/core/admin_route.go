@@ -15,7 +15,7 @@ import (
 func AdminLoginGet(w http.ResponseWriter, r *http.Request) {
 	t, err = initTmpl("adminLogin.html")
 	utils.CheckErr(err)
-	t.Execute(w, ComADMRtnVal())
+	t.Execute(w, ComADMRtnVal("Title", GetMapVal("ADMIN_LOGIN_PAGE")))
 }
 
 //admin login page --post
