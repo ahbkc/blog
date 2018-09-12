@@ -1,7 +1,7 @@
 package core
 
 import (
-	"fmt"
+	"context"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"html/template"
@@ -193,8 +193,7 @@ func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err, ok := recover().(error); ok {
-				fmt.Println(err)
-				Internal500Err(w, r) //general inner exception handler
+				Internal500Err(w, r.WithContext(context.WithValue(context.Background(), "exception", err))) //general inner exception handler
 			}
 		}()
 		regex1, _ := regexp.Compile(`^/admin*`)
@@ -271,22 +270,31 @@ func Internal500Err(w http.ResponseWriter, r *http.Request) {
     <meta name="renderer" content="webkit">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>{{.}}</title>
+    <title>{{.Title}}</title>
 </head>
 <body>
 <div style="width: 60%;margin: auto;padding-top: 50px;display: table">
     <div style="width: 45%;display: table-cell;padding: 5px;vertical-align: middle">
         <h1>Oops!</h1>
-        <h2>We can't seem to find the page you're looking for.</h2>
+        <h2>服务器内部错误!!!</h2>
         <h6>Error code: 500</h6>
+{{if .DEBUG}}
+		<h5>详细信息如下：</h5>
+		<p>{{.ErrorMsg}}</p>
+{{end}}
     </div>
     <div style="width: 45%;text-align: center;display: table-cell;padding: 5px">
     </div>
 </div>
 </body>
 </html>`
+	var model = GetMapVal("ENVIRONMENT") == "DEVELOP"
+	var data = map[string]interface{}{"Title": "500 page", "DEBUG": model}
+	if v, ok := r.Context().Value("exception").(error); ok {
+		data["ErrorMsg"] = v.Error()
+	}
 	t, _ := template.New("500").Parse(tpl)
-	t.Execute(w, "500 page")
+	t.Execute(w, data)
 }
 
 //405 MethodNotAllowedHandler
