@@ -17,10 +17,8 @@ import (
 
 const (
 	configureFileName = "/configure.json"
-	languageRootPath  = "/language"
 	AdminHtmlPath = "/html/admin/"
 	HtmlPath = "/html/front/"
-	AdminTmplHtmlPath = "/html/admin/tmpl/"
 )
 
 var (
