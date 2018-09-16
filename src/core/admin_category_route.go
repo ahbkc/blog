@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/satori/go.uuid"
 	"net/http"
-	"strconv"
 	"structs"
 	"time"
 	"utils"
@@ -19,124 +18,88 @@ func AdminCategoryGet(w http.ResponseWriter, r *http.Request) {
 
 //the foreground gets data asynchronously
 func AdminGetCategoryListAjaxPOST(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	check(err)
-	keyword := r.PostForm["keyword"][0]
-	page := r.PostForm["page"][0]
-	limit := r.PostForm["limit"][0]
-	if len(page) <= 0 || len(limit) <= 0 {
+	var query structs.Query
+	data := paramJson(r)
+	check(json.Unmarshal(data, &query))
+	if !query.Validate1() {
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: GetMapVal("PAGING_PARAMETER_IS_EMPTY")})
 		return
 	}
+
 	db := connect()
-	check(err)
 	defer db.Close()
-	var categorys []structs.Category
-	limit1, err := strconv.Atoi(limit)
-	check(err)
-	page1, err := strconv.Atoi(page)
-	check(err)
-	err = db.Table("category").Select("id, c_name , c_describe, strftime('%Y-%m-%d %H:%M:%S', created_at) as created_at, strftime('%Y-%m-%d %H:%M:%S', updated_at) as updated_at, article_count").
-		Where("c_name like ? or c_describe like ? or id = ?", "%"+keyword+"%", "%"+keyword+"%", keyword).Limit(limit1).Offset((page1 - 1) * limit1).Find(&categorys).Error
-	check(err)
-	var res = structs.TableGridResData{
-		Code:  0,
-		Msg:   "success",
-		Count: 1,
-	}
-	res.Data = categorys
-	json.NewEncoder(w).Encode(res)
+	var list []structs.Category
+
+	check(db.Table("category").Select("id, c_name , c_describe, strftime('%Y-%m-%d %H:%M:%S', created_at) as created_at, strftime('%Y-%m-%d %H:%M:%S', updated_at) as updated_at, article_count").
+		Where("c_name like ? or c_describe like ? or id = ?", "%"+query.Key+"%", "%"+query.Key+"%", query.Key).Limit(query.GetLimit()).Offset((query.Cur - 1) * query.Limit).Find(&list).Error)
+	check(db.Table("category").Select("id, c_name , c_describe, strftime('%Y-%m-%d %H:%M:%S', created_at) as created_at, strftime('%Y-%m-%d %H:%M:%S', updated_at) as updated_at, article_count").
+		Where("c_name like ? or c_describe like ? or id = ?", "%"+query.Key+"%", "%"+query.Key+"%", query.Key).Count(&query.TotalCount).Error)
+	json.NewEncoder(w).Encode(structs.TableGridResData{Code: 0, Msg: "success", Count: query.Pages(query.Limit), Data: list,
+	})
 	return
 }
 
 //add category
 func AdminAddCategoryAddAjaxPost(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	check(err)
-	categoryName := r.PostForm["categoryName"][0]
-	categoryDescription := r.PostForm["categoryDescription"][0]
-
-	if len(categoryName) <= 0 || len(categoryDescription) <= 0 {
+	var category = structs.Category{CreatedAt: time.Now().Format("2006-01-02 15:04:05")}
+	data := paramJson(r)
+	check(json.Unmarshal(data, &category))
+	if !category.Validate1() {
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
 		return
 	}
 
-	uuids, err := uuid.NewV4() //general uuids value
+	uid, err := uuid.NewV4()
 	check(err)
 	db := connect()
-	check(err)
-	//禁用复数形式表名
-	db.SingularTable(true)
 	defer db.Close()
-	err = db.Save(&structs.Category{
-		Id:        uuids.String(),
-		CName:     categoryName,
-		CDescribe: categoryDescription,
-		CreatedAt: time.Now().Format("2006-01-02 15:04:05"),
-	}).Error
-	check(err)
+	category.Id = uid.String()
+	check(db.Save(&category).Error)
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 	return
 }
 
-
 //delete category
 func AdminDelCategoryDelAjaxPost(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	check(err)
-	id := r.PostForm["id"][0]
-	if len(id) <= 0 {
-		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
-		return
-	}
-	db := connect()
-	check(err)
-	//disabled mores table
-	db.SingularTable(true)
-	defer db.Close()
 	var category structs.Category
-	err = db.Where("id = ?", id).First(&category).Error
-	check(err)
-	if category.Id != "" {
-		err = db.Delete(&category).Error
-		check(err)
-		json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
+	data := paramJson(r)
+	check(json.Unmarshal(data, &category))
+	if !category.ValidateVar(category.Id, "required") {
+		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
+	}
+
+	db := connect()
+	defer db.Close()
+	db.Where("id = ?", category.Id).First(&category)
+	jsonWriter := json.NewEncoder(w)
+	if category.ValidateVar(category.CreatedAt, "required", category.Id, "required") {
+		check(db.Delete(&category).Error)
+		jsonWriter.Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 		return
 	}
-	json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: GetMapVal("EXECUTION_FAILED")})
+	jsonWriter.Encode(structs.ResData{Code: "-99", Msg: GetMapVal("EXECUTION_FAILED")})
 	return
 }
 
-
 //edit category
 func AdminEditCategoryEditAjaxPost(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	check(err)
-
-	id := r.PostForm["id"][0]
-	categoryName := r.PostForm["categoryName"][0]
-	categoryDescription := r.PostForm["categoryDescription"][0]
-
-	if len(categoryName) <= 0 || len(categoryDescription) <= 0 || len(id) <= 0 {
+	var category structs.Category
+	data := paramJson(r)
+	check(json.Unmarshal(data, &category))
+	if !category.Validate1() || !category.ValidateVar(category.Id, "required") {
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
 		return
 	}
 
 	db := connect()
-	check(err)
-	//disabled mores table
-	db.SingularTable(true)
 	defer db.Close()
-	var category structs.Category
-	err = db.Where("id = ?", id).First(&category).Error
-	check(err)
-	if category.Id == "" {
+	db.Where("id = ?", category.Id).First(&category)
+	if !category.ValidateVar(category.Id, "required", category.CreatedAt, "required") {
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: GetMapVal("DATA_DOES_NOT_EXIST")})
 		return
 	}
-
-	err = db.Model(&category).Updates(structs.Category{CName:categoryName, CDescribe:categoryDescription, UpdatedAt:time.Now().Format("2006-01-02 15:04:05")}).Error
-	check(err)
+	category.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+	check(db.Model(&category).Updates(category).Error)
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 	return
 }
