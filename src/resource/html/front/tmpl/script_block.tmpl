@@ -12,7 +12,7 @@
             ,curr: {{.PAGE_Curr}}
             ,jump: function(obj, first){
                 if(!first){
-                    window.location.href = "/detail/{{.Detail.Id}}.html?page="+ obj.curr;  //分页跳转
+                    window.location.href = "/detail/{{.Detail.Id}}.html?cur="+ (obj.curr - 1);  //分页跳转
                 }
             }
         });
