@@ -17,10 +17,13 @@ var (
 	UserRtnMap = make(map[string]interface{})
 	t *template.Template
 	err error
+	connect = utils.GetCoon
+	check = utils.CheckErr
+	paramJson = utils.ParamJson
 )
 
 //初始化template
-func initTmpl(n string) (tpl *template.Template, err error) {
+func initTmpl(n string) (tpl *template.Template) {
 	var path, f string
 	if strings.HasPrefix(n, "admin") {
 		path = filepath.Join(utils.Dir, "/src/resource", utils.AdminHtmlPath)
@@ -33,13 +36,9 @@ func initTmpl(n string) (tpl *template.Template, err error) {
 	f = filepath.Join(path, n)
 	path = filepath.Join(path, "tmpl", "*.tmpl")
 	tpl, err = template.ParseGlob(path)
-	if err != nil {
-		return
-	}
+	check(err)
 	tpl, err = tpl.New(n).ParseFiles(f)
-	if err != nil {
-		return
-	}
+	check(err)
 	return
 }
 
@@ -71,7 +70,6 @@ func GetMapVal(s string) string {
 		panic(errors.New("no Match Value"))
 	}
 }
-
 
 //output verifyCode picture
 func VerifyCodeGenerate(w http.ResponseWriter, r *http.Request) {

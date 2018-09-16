@@ -1,14 +1,12 @@
 package core
 
 import (
-	"net/http"
-	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
-	"utils"
-	"structs"
-	"github.com/satori/go.uuid"
-	"time"
 	"encoding/json"
+	"github.com/gorilla/mux"
+	"github.com/satori/go.uuid"
+	"net/http"
+	"structs"
+	"time"
 )
 
 //comment article
@@ -20,7 +18,7 @@ func CommentLeaveMsg(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := r.ParseForm()
-	utils.CheckErr(err)
+	check(err)
 	//判断请求值
 	name := r.FormValue("name")
 	mail := r.FormValue("mail")
@@ -34,14 +32,14 @@ func CommentLeaveMsg(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := vars["id"]
-	db, err := gorm.Open(GetMapVal("dialect"), utils.Dir + GetMapVal("db_path"))
-	utils.CheckErr(err)
+	db := connect()
+	check(err)
 	//disabled mores table
 	db.SingularTable(true)
 	defer db.Close()
 
 	uuids, err := uuid.NewV4() //general uuids value
-	utils.CheckErr(err)
+	check(err)
 	//保存评论
 	err = db.Save(&structs.Comment{
 		Id:uuids.String(),
@@ -52,7 +50,7 @@ func CommentLeaveMsg(w http.ResponseWriter, r *http.Request) {
 		CreatedAt: time.Now().Format("2006-01-02 15:04:05"),
 		RelevancyId: id,
 	}).Error
-	utils.CheckErr(err)
+	check(err)
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 	return
 }

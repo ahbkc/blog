@@ -2,7 +2,6 @@ package core
 
 import (
 	"encoding/json"
-	"github.com/jinzhu/gorm"
 	"github.com/satori/go.uuid"
 	"net/http"
 	"strconv"
@@ -13,15 +12,15 @@ import (
 
 //admin category manage page
 func AdminCategoryGet(w http.ResponseWriter, r *http.Request) {
-	t, err = initTmpl("adminCategory.html")
-	utils.CheckErr(err)
+	t = initTmpl("adminCategory.html")
+	check(err)
 	t.Execute(w, ComADMRtnVal("Menus", utils.GetMenuList(1)))
 }
 
 //the foreground gets data asynchronously
 func AdminGetCategoryListAjaxPOST(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
-	utils.CheckErr(err)
+	check(err)
 	keyword := r.PostForm["keyword"][0]
 	page := r.PostForm["page"][0]
 	limit := r.PostForm["limit"][0]
@@ -29,17 +28,17 @@ func AdminGetCategoryListAjaxPOST(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: GetMapVal("PAGING_PARAMETER_IS_EMPTY")})
 		return
 	}
-	db, err := gorm.Open(GetMapVal("dialect"), utils.Dir + GetMapVal("db_path"))
-	utils.CheckErr(err)
+	db := connect()
+	check(err)
 	defer db.Close()
 	var categorys []structs.Category
 	limit1, err := strconv.Atoi(limit)
-	utils.CheckErr(err)
+	check(err)
 	page1, err := strconv.Atoi(page)
-	utils.CheckErr(err)
+	check(err)
 	err = db.Table("category").Select("id, c_name , c_describe, strftime('%Y-%m-%d %H:%M:%S', created_at) as created_at, strftime('%Y-%m-%d %H:%M:%S', updated_at) as updated_at, article_count").
 		Where("c_name like ? or c_describe like ? or id = ?", "%"+keyword+"%", "%"+keyword+"%", keyword).Limit(limit1).Offset((page1 - 1) * limit1).Find(&categorys).Error
-	utils.CheckErr(err)
+	check(err)
 	var res = structs.TableGridResData{
 		Code:  0,
 		Msg:   "success",
@@ -53,7 +52,7 @@ func AdminGetCategoryListAjaxPOST(w http.ResponseWriter, r *http.Request) {
 //add category
 func AdminAddCategoryAddAjaxPost(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
-	utils.CheckErr(err)
+	check(err)
 	categoryName := r.PostForm["categoryName"][0]
 	categoryDescription := r.PostForm["categoryDescription"][0]
 
@@ -63,9 +62,9 @@ func AdminAddCategoryAddAjaxPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	uuids, err := uuid.NewV4() //general uuids value
-	utils.CheckErr(err)
-	db, err := gorm.Open(GetMapVal("dialect"), utils.Dir + GetMapVal("db_path"))
-	utils.CheckErr(err)
+	check(err)
+	db := connect()
+	check(err)
 	//禁用复数形式表名
 	db.SingularTable(true)
 	defer db.Close()
@@ -75,7 +74,7 @@ func AdminAddCategoryAddAjaxPost(w http.ResponseWriter, r *http.Request) {
 		CDescribe: categoryDescription,
 		CreatedAt: time.Now().Format("2006-01-02 15:04:05"),
 	}).Error
-	utils.CheckErr(err)
+	check(err)
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 	return
 }
@@ -84,23 +83,23 @@ func AdminAddCategoryAddAjaxPost(w http.ResponseWriter, r *http.Request) {
 //delete category
 func AdminDelCategoryDelAjaxPost(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
-	utils.CheckErr(err)
+	check(err)
 	id := r.PostForm["id"][0]
 	if len(id) <= 0 {
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
 		return
 	}
-	db, err := gorm.Open(GetMapVal("dialect"), utils.Dir + GetMapVal("db_path"))
-	utils.CheckErr(err)
+	db := connect()
+	check(err)
 	//disabled mores table
 	db.SingularTable(true)
 	defer db.Close()
 	var category structs.Category
 	err = db.Where("id = ?", id).First(&category).Error
-	utils.CheckErr(err)
+	check(err)
 	if category.Id != "" {
 		err = db.Delete(&category).Error
-		utils.CheckErr(err)
+		check(err)
 		json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 		return
 	}
@@ -112,7 +111,7 @@ func AdminDelCategoryDelAjaxPost(w http.ResponseWriter, r *http.Request) {
 //edit category
 func AdminEditCategoryEditAjaxPost(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
-	utils.CheckErr(err)
+	check(err)
 
 	id := r.PostForm["id"][0]
 	categoryName := r.PostForm["categoryName"][0]
@@ -123,21 +122,21 @@ func AdminEditCategoryEditAjaxPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := gorm.Open(GetMapVal("dialect"), utils.Dir + GetMapVal("db_path"))
-	utils.CheckErr(err)
+	db := connect()
+	check(err)
 	//disabled mores table
 	db.SingularTable(true)
 	defer db.Close()
 	var category structs.Category
 	err = db.Where("id = ?", id).First(&category).Error
-	utils.CheckErr(err)
+	check(err)
 	if category.Id == "" {
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: GetMapVal("DATA_DOES_NOT_EXIST")})
 		return
 	}
 
 	err = db.Model(&category).Updates(structs.Category{CName:categoryName, CDescribe:categoryDescription, UpdatedAt:time.Now().Format("2006-01-02 15:04:05")}).Error
-	utils.CheckErr(err)
+	check(err)
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 	return
 }

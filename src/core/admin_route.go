@@ -13,8 +13,8 @@ import (
 
 //admin login page --get
 func AdminLoginGet(w http.ResponseWriter, r *http.Request) {
-	t, err = initTmpl("adminLogin.html")
-	utils.CheckErr(err)
+	t = initTmpl("adminLogin.html")
+	check(err)
 	t.Execute(w, ComADMRtnVal("Title", GetMapVal("ADMIN_LOGIN_PAGE")))
 }
 
@@ -27,7 +27,7 @@ func AdminLoginPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := r.ParseForm()
-	utils.CheckErr(err)
+	check(err)
 	userName := r.FormValue("userName")
 	password := r.FormValue("password")
 	verifyCode := r.FormValue("verifyCode")
@@ -44,7 +44,7 @@ func AdminLoginPost(w http.ResponseWriter, r *http.Request) {
 	}
 	m := md5.New()
 	_, err = m.Write([]byte(password))
-	utils.CheckErr(err)
+	check(err)
 	cipherStr := m.Sum(nil)
 	name := GetMapVal( "USER_NAME")
 	passwd := GetMapVal("PASSWORD")
@@ -68,8 +68,8 @@ func AdminLoginPost(w http.ResponseWriter, r *http.Request) {
 
 //admin index page  --get
 func AdminIndexGet(w http.ResponseWriter, r *http.Request) {
-	t, err = initTmpl("adminIndex.html")
-	utils.CheckErr(err)
+	t = initTmpl("adminIndex.html")
+	check(err)
 	t.Execute(w, ComADMRtnVal("Menus", utils.GetMenuList(0), "Article", 100, "Category", 100, "Comment", 100))
 	return
 }

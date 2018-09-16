@@ -3,12 +3,10 @@ package core
 import (
 	"context"
 	"github.com/gorilla/mux"
-	"github.com/rakyll/statik/fs"
 	"html/template"
 	"net/http"
 	"path/filepath"
 	"regexp"
-	_ "statik"
 	"strings"
 	"utils"
 )
@@ -161,11 +159,11 @@ func NewRouter() *mux.Router {
 			Name(v.Name)
 	}
 
-	statikFS, err := fs.New()
-	if err != nil {
-		utils.CheckStartError(err)
-	}
-	utils.StatikFS = statikFS //赋值
+	//statikFS, err := fs.New()
+	//if err != nil {
+	//	utils.CheckStartError(err)
+	//}
+	//utils.StatikFS = statikFS //赋值
 
 	//router.PathPrefix("/resource/").Methods("GET").Name("resource").
 	//	Handler(http.StripPrefix("/resource", http.FileServer(utils.StatikFS))) //static file path
