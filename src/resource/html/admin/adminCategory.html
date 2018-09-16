@@ -8,7 +8,7 @@
     <div class="layui-body">
         <div style="padding: 15px;">
             <div id="toolbar">
-                <div  style="text-align: right;">
+                <div style="text-align: right;">
                     <div class="layui-btn-container">
                         <button id="searchBtn" class="layui-btn layui-btn-primary">搜索</button>
                         <button id="addBtn" class="layui-btn">添加</button>
@@ -28,29 +28,32 @@
     var grid;
     var selectLineData;
     var popIndex;
-    layui.use(['layer', 'table', 'form'], function(){
+    layui.use(['layer', 'table', 'form'], function () {
         $ = layui.jquery;
         layer = layui.layer;
         let form = layui.form;
         let table = layui.table;
         grid = table.render({
             elem: '#demo'
-            ,height: 500
-            ,url: '/admin/category/list_ajax'
-            ,page: true
-            ,method: 'post'
-            ,cols: [[
-                {type:'checkbox'}
-                ,{field: 'Id', title: 'ID', width:300}
-                ,{field: 'CName', title: '分类名称', width:100}
-                ,{field: 'CDescribe', title: '分类说明'}
-                ,{field: 'ArticleCount', title: '文章数量', width:90}
-                ,{field: 'UpdatedAt', title: '最后更新', sort: true}
-                ,{field: 'CreatedAt', title: '创建时间', sort: true}
-                ,{fixed: 'right', width:150, align:'center', title: '操作', toolbar: '#barDemo'}
+            , height: 500
+            , url: '/admin/category/list_ajax'
+            , page: true
+            , method: 'post'
+            , cols: [[
+                {type: 'checkbox'}
+                , {field: 'Id', title: 'ID', width: 300}
+                , {field: 'CName', title: '分类名称', width: 100}
+                , {field: 'CDescribe', title: '分类说明'}
+                , {field: 'ArticleCount', title: '文章数量', width: 90}
+                , {field: 'UpdatedAt', title: '最后更新', sort: true}
+                , {field: 'CreatedAt', title: '创建时间', sort: true}
+                , {fixed: 'right', width: 150, align: 'center', title: '操作', toolbar: '#barDemo'}
             ]]
-            ,where: {
+            , where: {
                 keyword: ""
+            },
+            request: {
+                pageName: 'cur'
             }
         });
 
@@ -69,7 +72,7 @@
                         '                    <i id="searchIcon" class="layui-icon" style="display: inline-block;cursor: pointer;font-size: 26px;position: relative;top: 5px;right: 40px">&#xe615;</i>\n' +
                         '                </div>';
                 $("#toolbar").prepend(tp)
-            }else {
+            } else {
                 v.addClass('layui-btn-primary');
                 var child = $("#toolbar").find('.layui-anim.layui-anim-scale');
                 rEle.css('display', '');
@@ -77,13 +80,13 @@
                 child.remove()
             }
         });
-        table.on('tool(demo)', function(obj){
+        table.on('tool(demo)', function (obj) {
             var data = obj.data;
             var layEvent = obj.event;
             var tr = obj.tr;
             selectLineData = data;
 
-            if(layEvent === 'detail'){
+            if (layEvent === 'detail') {
                 //show category message
                 layer.open({
                     type: 1,
@@ -92,8 +95,8 @@
                     content: getPopFormat('show', data.CName, data.CDescribe)
                 });
                 form.render()
-            } else if(layEvent === 'del'){
-                layer.confirm('Are you delete ?', function(index){
+            } else if (layEvent === 'del') {
+                layer.confirm('Are you delete ?', function (index) {
                     $.ajax({
                         type: 'POST',
                         url: '/admin/category/del_ajax',
@@ -108,8 +111,8 @@
                                 layer.close(index);
                                 layer.msg(result.msg, {time: 1500}, function () {
                                     grid.reload({
-                                        page: {
-                                            curr: 1
+                                        request: {
+                                            pageName: 'cur'
                                         }
                                     });
                                 });
@@ -120,12 +123,12 @@
                         }
                     });
                 });
-            } else if(layEvent === 'edit'){
+            } else if (layEvent === 'edit') {
                 popIndex = layer.open({
                     type: 1,
                     skin: 'layui-layer-rim',
                     area: ['600px', '300px'],
-                    content: getPopFormat('edit',data.CName, data.CDescribe)
+                    content: getPopFormat('edit', data.CName, data.CDescribe)
                 });
                 form.render();
             }
@@ -210,10 +213,10 @@
             }
             grid.reload({
                 where: {
-                    keyword: v
-                }
-                ,page: {
-                    curr: 1
+                    key: v
+                },
+                request: {
+                    pageName: 'cur'
                 }
             });
         })
@@ -221,31 +224,32 @@
 
     function getPopFormat(flag, categoryName, categoryDescribe) {
         if (categoryName === undefined || categoryDescribe === undefined) {
-            categoryName = '';categoryDescribe = '';
+            categoryName = '';
+            categoryDescribe = '';
         }
         var appendStr = '';
         if (flag !== undefined && (flag == 'edit' || flag == 'add')) {
             appendStr = '  <div class="layui-form-item">\n' +
                     '    <div class="layui-input-block">\n' +
-                    '      <button class="layui-btn" lay-submit lay-filter="'+flag+'Form">submit</button>\n' +
+                    '      <button class="layui-btn" lay-submit lay-filter="' + flag + 'Form">submit</button>\n' +
                     '      <button type="reset" class="layui-btn layui-btn-primary">reset</button>\n' +
                     '    </div>\n' +
                     '  </div>\n';
         }
         return '<form class="layui-form" style="padding: 15px"> \n' +
                 '  <div class="layui-form-item">\n' +
-                '    <label class="layui-form-label">categoryName</label>\n' +
+                '    <label class="layui-form-label">分类名称</label>\n' +
                 '    <div class="layui-input-block">\n' +
-                '      <input type="text" name="categoryName" required lay-verify="required" placeholder="please input..." autocomplete="off" class="layui-input" value="'+categoryName+'">\n' +
+                '      <input type="text" name="categoryName" required lay-verify="required" placeholder="please input..." autocomplete="off" class="layui-input" value="' + categoryName + '">\n' +
                 '    </div>\n' +
                 '  </div>\n' +
                 '  <div class="layui-form-item layui-form-text">\n' +
-                '    <label class="layui-form-label">categoryDescribe</label>\n' +
+                '    <label class="layui-form-label">分类描述</label>\n' +
                 '    <div class="layui-input-block">\n' +
-                '      <textarea placeholder="please input..." required lay-verify="required" name="categoryDescription" style="resize: none" class="layui-textarea">'+categoryDescribe+'</textarea>\n' +
+                '      <textarea placeholder="please input..." required lay-verify="required" name="categoryDescription" style="resize: none" class="layui-textarea">' + categoryDescribe + '</textarea>\n' +
                 '    </div>\n' +
                 '  </div>\n' +
-                appendStr+
+                appendStr +
                 '</form>'
     }
 </script>
