@@ -37,7 +37,7 @@ type Menu struct {
 
 //correspond to article table
 type Article struct {
-	Id string `gorm:"primary_key"`
+	Id string `gorm:"primary_key" json:"id"`
 	Title string
 	Picture string
 	Content template.HTML
@@ -86,4 +86,35 @@ type ArticleComment struct {
 	gorm.Model
 	ArticleId string
 	CommentId string
+}
+
+//use query data
+type Query struct {
+	Cur int `json:"cur"`
+	Limit int `json:"limit"`
+	Key string `json:"key"`
+	Grid
+}
+
+func (q *Query) GetLimit() int {
+	if q.Limit == 0 {
+		q.Limit = 10
+	}
+	return q.Limit
+}
+
+func (q *Query) Validate() {
+}
+
+type Grid struct {
+	TotalCount int
+}
+
+//get pages  totalCount / limit
+func (g Grid) Pages(l int) (pages int) {
+	if g.TotalCount % l > 0 {
+		pages++
+	}
+	pages += g.TotalCount / l
+	return
 }
