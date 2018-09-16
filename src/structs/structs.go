@@ -3,11 +3,14 @@ package structs
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"github.com/go-playground/validator"
 	"github.com/jinzhu/gorm"
 	"html/template"
 	"strings"
 	"time"
 )
+
+var validate = validator.New()
 
 //custom struct
 type Session struct {
@@ -70,11 +73,27 @@ type Article struct {
 //correspond to category table
 type Category struct {
 	Id string `gorm:"primary_key"`   //默认为uint类型，但是数据库中存的是uuid值，所以不引入gorm.Model
-	CName string
-	CDescribe string
+	CName string `json:"categoryName" validate:"required"`
+	CDescribe string `json:"categoryDescription" validate:"required"`
 	CreatedAt string
 	UpdatedAt string
 	ArticleCount int
+}
+
+func (c *Category) Validate1() bool {
+	if err := validate.Struct(c); err != nil {
+		return false
+	}
+	return true
+}
+
+func (c *Category) ValidateVar(vars ...string) bool {
+	for i := 0; i != len(vars); i += 2 {
+		if e := validate.Var(vars[i], vars[i+1]); e != nil {
+			return false
+		}
+	}
+	return true
 }
 
 //correspond to comment table
@@ -111,8 +130,8 @@ type ArticleComment struct {
 
 //use query data
 type Query struct {
-	Cur int `json:"cur"`
-	Limit int `json:"limit"`
+	Cur int `json:"cur,string" validate:"required"`
+	Limit int `json:"limit,string" validate:"required"`
 	Key string `json:"key"`
 	Grid
 }
@@ -124,7 +143,13 @@ func (q *Query) GetLimit() int {
 	return q.Limit
 }
 
-func (q *Query) Validate() {
+//verification cur and limit
+func (q *Query) Validate1() (result bool) {
+	err := validate.Struct(q)
+	if err != nil {
+		return
+	}
+	return true
 }
 
 type Grid struct {
