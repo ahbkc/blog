@@ -79,14 +79,14 @@ type Category struct {
 
 //correspond to comment table
 type Comment struct {
-	Id string `gorm:"primary_key"`
+	Id string `gorm:"primary_key"json:"id"`
 	CommentUserName string
 	CommentUserEmail string
 	CommentUserContent string
 	CommentUserAddress string
 	CreatedAt string
 	UpdatedAt string
-	RelevancyId string
+	RelevancyId string `json:"relevancyId"`
 }
 
 //correspond to log table
