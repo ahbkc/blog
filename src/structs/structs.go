@@ -1,9 +1,12 @@
 package structs
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"github.com/jinzhu/gorm"
-	"time"
 	"html/template"
+	"strings"
+	"time"
 )
 
 //custom struct
@@ -11,6 +14,24 @@ type Session struct {
 	Name string
 	Value string
 	LoginTime time.Time
+}
+
+type User struct {
+	UserName string `json:"userName"`
+	Password string `json:"password"`
+	VerifyCode string `json:"verifyCode"`
+}
+
+func (u *User) GetMd5Pwd() string {
+	m := md5.New()
+	if strings.TrimSpace(u.Password) == "" || len(u.Password) <= 0 {
+		return ""
+	}
+	_, err := m.Write([]byte(u.Password))
+	if err != nil {
+		return ""
+	}
+	return hex.EncodeToString(m.Sum(nil))
 }
 
 //general response json data
