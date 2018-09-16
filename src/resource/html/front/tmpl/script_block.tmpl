@@ -28,10 +28,10 @@
                 layer.msg('请输入姓名、邮箱、网址、评论内容!');
             } else {
                 var params = {
-                    "name": name.val(),
-                    "mail": mail.val(),
-                    "address": address.val(),
-                    "leaveMsg": leaveMsg.val()
+                    "CommentUserName": name.val(),
+                    "CommentUserEmail": mail.val(),
+                    "CommentUserAddress": address.val(),
+                    "CommentUserContent": leaveMsg.val()
                 };
                 //提交请求
                 $.post('/comment/{{.Detail.Id}}_ajax', params, function (result) {
