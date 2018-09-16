@@ -8,6 +8,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"structs"
 	"sync"
@@ -123,6 +124,29 @@ func CheckToken(token string) bool {
 		return true
 	}
 	return false
+}
+
+func GetCoon() (db *gorm.DB) {
+	db, err := gorm.Open(getMapVal("dialect"), Dir + getMapVal("db_path"))
+	CheckErr(err)
+	db.SingularTable(true)
+	db.LogMode(true)
+	return
+}
+
+func ParamJson(r *http.Request) (data []byte) {
+	var val url.Values
+	var e error
+	if r.Method == "GET" {
+		val, e = url.ParseQuery(r.URL.RawQuery)
+	}else if r.Method == "POST" {
+		e = r.ParseForm()
+		val = r.PostForm
+	}
+	CheckErr(e)
+	data, e = json.Marshal(&val)
+	CheckErr(e)
+	return
 }
 
 func GetMenuList(flag uint8) []structs.Menu {
