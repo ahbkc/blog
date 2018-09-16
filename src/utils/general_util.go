@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"crypto/md5"
 	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
@@ -32,6 +33,7 @@ var (
 	Method       = map[string]string{"GET": ".html", "POST": "_ajax"}
 	IdKeyD       string
 	StatikFS     http.FileSystem
+	m = md5.New()
 )
 
 type General struct {
@@ -141,10 +143,15 @@ func ParamJson(r *http.Request) (data []byte) {
 		val, e = url.ParseQuery(r.URL.RawQuery)
 	}else if r.Method == "POST" {
 		e = r.ParseForm()
-		val = r.PostForm
+		val = r.Form
 	}
 	CheckErr(e)
-	data, e = json.Marshal(&val)
+	//convert to map
+	var m = make(map[string]string)
+	for i, v := range val {
+		m[i] = v[0]
+	}
+	data, e = json.Marshal(&m)
 	CheckErr(e)
 	return
 }
@@ -167,4 +174,21 @@ func getMapVal(s string) string {
 	}else {
 		panic(errors.New("no Match Value"))
 	}
+}
+
+func NewCookie(n, v string, httpOnly bool) http.Cookie {
+	return http.Cookie{Name:n, Value:v, HttpOnly:httpOnly, Expires: time.Now().Add(time.Hour * 24)}
+}
+
+func RemoveCookie(n, v string) http.Cookie {
+	return http.Cookie{Name:n, Value:v, Path:"/", MaxAge: -1, HttpOnly:true}
+}
+
+func SetSession(n, v string) {
+	Sessions = structs.Session{Name:n, Value:v, LoginTime:time.Now()}
+}
+
+func RemoveSession() http.Cookie {
+	Sessions = structs.Session{}
+	return RemoveCookie(getMapVal("COOKIE_NAME"), getMapVal("TOKEN"))
 }
