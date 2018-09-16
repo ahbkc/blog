@@ -19,5 +19,6 @@
   "ADMIN_FOOTER_MESSAGE": "欢迎登陆管理页面",
   "MENU_CATEGORY": "分类管理",
   "MENU_ARTICLE": "文章管理",
-  "MENU_INDEX": "首页"
+  "MENU_INDEX": "首页",
+  "ADMIN_LOGIN_PAGE": "管理员登陆页面"
 }
