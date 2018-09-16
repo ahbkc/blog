@@ -51,7 +51,7 @@ var routes = []Route{
 	},
 	{
 		"comment_leave_msg",
-		"/comment/{id}",
+		"/comment/{relevancyId}",
 		"POST",
 		CommentLeaveMsg,
 	},
