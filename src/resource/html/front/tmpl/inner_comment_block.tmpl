@@ -30,9 +30,11 @@
                     <span class="date">{{$y.CreatedAt}}</span>
                 </div>
             {{else}}
-                {{"not row"}}
+                {{"当前还没有人评论..."}}
             {{end}}
             </div>
         </div>
 </div>
+{{if gt .PAGE_Count 10}}
 <div id="page"></div>
+{{end}}

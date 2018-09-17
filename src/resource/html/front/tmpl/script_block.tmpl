@@ -12,7 +12,7 @@
             ,curr: {{.PAGE_Curr}}
             ,jump: function(obj, first){
                 if(!first){
-                    window.location.href = "/detail/{{.Detail.Id}}.html?cur="+ (obj.curr - 1);  //分页跳转
+                    window.location.href = "{{.Url}}.html?cur="+ obj.curr;  //分页跳转
                 }
             }
         });
@@ -34,7 +34,7 @@
                     "CommentUserContent": leaveMsg.val()
                 };
                 //提交请求
-                $.post('/comment/{{.Detail.Id}}_ajax', params, function (result) {
+                $.post('/comment/{{.Id}}_ajax', params, function (result) {
                     if (result && result.code != '100') {
                         layer.msg(result.msg);
                     } else {

@@ -12,7 +12,15 @@
                     <div class="image">
                         <img class="show-image" src="{{$y.Picture}}" alt="image"/>
                     </div>
-                    <span class="article-title">{{$y.Title}}</span>
+                    <div>
+                        <div style="float: left">
+                            <span class="article-title textHidden">{{$y.Title}}</span>
+                        </div>
+                        <div style="float: right;line-height: 40px;">
+                            <span class="layui-badge layui-bg-gray"
+                                  style="font-size: 16px;text-align: right">默认分类</span>
+                        </div>
+                    </div>
                 </a>
             </div>
         </div>
@@ -20,7 +28,9 @@
          {{"not row"}}
     {{end}}
     </div>
-{{template "page_block.tmpl" .}}
+{{if gt .PAGE_Count 10}}
+    <div id="page"></div>
+{{end}}
 </div>
 {{template "script_block.tmpl" .}}
 </body>
