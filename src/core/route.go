@@ -206,12 +206,14 @@ func Middleware(next http.Handler) http.Handler {
 			}else {
 				proto = "https://"
 			}
-			if cookie, _ := r.Cookie("hhhhh_cookie"); cookie == nil {
+			if cookie, _ := r.Cookie(GetMapVal("COOKIE_NAME")); cookie == nil {
 				http.Redirect(w, r, proto + r.Host + "/admin/login.html", http.StatusFound) //redirect /admin/login
 			} else {
 				if utils.Sessions.Name != "" && utils.Sessions.Value != "" {
 					next.ServeHTTP(w, r) //next
 				} else {
+					//删除cookie
+					http.SetCookie(w, utils.RemoveCookie(GetMapVal("COOKIE_NAME")))
 					http.Redirect(w, r, proto + r.Host + "/admin/login.html", http.StatusFound) //redirect /admin/login
 				}
 			}
