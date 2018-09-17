@@ -46,7 +46,7 @@ func AdminLoginPost(w http.ResponseWriter, r *http.Request) {
 //admin index page  --get
 func AdminIndexGet(w http.ResponseWriter, r *http.Request) {
 	t = initTmpl("adminIndex.html")
-	t.Execute(w, ComADMRtnVal("Menus", utils.GetMenuList(0), "Article", 100, "Category", 100, "Comment", 100))
+	t.Execute(w, ComADMRtnVal("Menus", utils.GetMenuList(0), "Article", 100, "Category", 100, "Comment", 100, "Title", GetMapVal("ADMIN_INDEX_TITLE")))
 	return
 }
 
