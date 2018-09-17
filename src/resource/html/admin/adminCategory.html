@@ -231,8 +231,8 @@
         if (flag !== undefined && (flag == 'edit' || flag == 'add')) {
             appendStr = '  <div class="layui-form-item">\n' +
                     '    <div class="layui-input-block">\n' +
-                    '      <button class="layui-btn" lay-submit lay-filter="' + flag + 'Form">submit</button>\n' +
-                    '      <button type="reset" class="layui-btn layui-btn-primary">reset</button>\n' +
+                    '      <button class="layui-btn" lay-submit lay-filter="' + flag + 'Form">提交</button>\n' +
+                    '      <button type="reset" class="layui-btn layui-btn-primary">重置</button>\n' +
                     '    </div>\n' +
                     '  </div>\n';
         }
@@ -240,13 +240,13 @@
                 '  <div class="layui-form-item">\n' +
                 '    <label class="layui-form-label">分类名称</label>\n' +
                 '    <div class="layui-input-block">\n' +
-                '      <input type="text" name="categoryName" required lay-verify="required" placeholder="please input..." autocomplete="off" class="layui-input" value="' + categoryName + '">\n' +
+                '      <input type="text" name="CName" required lay-verify="required" placeholder="请输入名称" autocomplete="off" class="layui-input" value="' + categoryName + '">\n' +
                 '    </div>\n' +
                 '  </div>\n' +
                 '  <div class="layui-form-item layui-form-text">\n' +
                 '    <label class="layui-form-label">分类描述</label>\n' +
                 '    <div class="layui-input-block">\n' +
-                '      <textarea placeholder="please input..." required lay-verify="required" name="categoryDescription" style="resize: none" class="layui-textarea">' + categoryDescribe + '</textarea>\n' +
+                '      <textarea placeholder="请输入描述" required lay-verify="required" name="CDescribe" style="resize: none" class="layui-textarea">' + categoryDescribe + '</textarea>\n' +
                 '    </div>\n' +
                 '  </div>\n' +
                 appendStr +

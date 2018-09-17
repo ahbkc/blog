@@ -47,22 +47,27 @@
             , method: 'post'
             , cols: [[
                 {type: 'checkbox'}
-                , {field: 'Id', title: 'ID', width: 300}
-                , {field: 'Title', title: '标题', width: 300}
-                , {field: 'State', title: '状态', width: 90, templet: function (v) {
-                      return '<div><input type="checkbox" init="'+v.State+'" value="'+v.Id+'" lay-filter="switchState" '+(v.State === 0 ? 'checked="checked"' : "")+' lay-text="显|隐" lay-skin="switch" title="状态"></div>'
-                    },unresize: true}
+                , {field: 'id', title: 'ID', width: 300}
+                , {field: 'title', title: '标题', width: 300}
+                , {
+                    field: 'State', title: '状态', width: 90, templet: function (v) {
+                        return '<div><input type="checkbox" init="' + v.State + '" value="' + v.id + '" lay-filter="switchState" ' + (v.State == 0 ? 'checked="checked"' : "") + ' lay-text="显|隐" lay-skin="switch" title="状态"></div>'
+                    }, unresize: true
+                }
                 , {field: 'UpdatedAt', title: '最后更新时间', sort: true}
                 , {field: 'CreatedAt', title: '创建时间', sort: true}
                 , {fixed: 'right', width: 150, align: 'center', title: '操作', toolbar: '#barDemo'}
             ]]
             , where: {
                 keyword: ""
+            },
+            request: {
+                pageName: 'cur'
             }
         });
 
-        //监听性别操作
-        form.on('switch(switchState)', function(obj){
+        //监听状态操作
+        form.on('switch(switchState)', function (obj) {
             var checked = obj.elem.checked
             var elem = $(obj.elem)
             var init = elem.attr("init")
@@ -83,8 +88,8 @@
                     } else if (result.code == 100) {
                         layer.msg(result.msg, {time: 1500}, function () {
                             grid.reload({
-                                page: {
-                                    curr: 1
+                                request: {
+                                    pageName: 'cur'
                                 }
                             });
                         });
@@ -138,7 +143,7 @@
                     type: 1,
                     skin: 'layui-layer-rim',
                     area: ['800px', '500px'],
-                    content: getPopFormat('show', data.Title, data.Picture, data.Content)
+                    content: getPopFormat('show', data.title, data.Picture, data.content)
                 });
                 form.render()
                 //构建一个默认的编辑器
@@ -155,7 +160,7 @@
                     $.ajax({
                         type: 'POST',
                         url: '/admin/article/del_ajax',
-                        data: {id: data.Id},
+                        data: {id: data.id},
                         contentType: 'application/x-www-form-urlencoded',
                         dataType: 'json',
                         async: true,
@@ -165,8 +170,8 @@
                             } else if (result.code == 100) {
                                 layer.msg(result.msg, {time: 1500}, function () {
                                     grid.reload({
-                                        page: {
-                                            curr: 1
+                                        request: {
+                                            pageName: 'cur'
                                         }
                                     });
                                 });
@@ -182,7 +187,7 @@
                     type: 1,
                     skin: 'layui-layer-rim',
                     area: ['800px', '500px'],
-                    content: getPopFormat('edit', data.Title, data.Picture, data.Content)
+                    content: getPopFormat('edit', data.title, data.Picture, data.content)
                 });
                 form.render();
 
@@ -208,8 +213,8 @@
                     layer.close(popIndex);
                     layer.msg(result.msg, {time: 1500}, function () {
                         grid.reload({
-                            page: {
-                                curr: 1
+                            request: {
+                                pageName: 'cur'
                             }
                         });
                     });
@@ -224,7 +229,7 @@
         form.on('submit(editForm)', function (data) {
             // $("#LAY_demo1").val(layedit.getContent(layeditIndex)); //赋值
             layedit.sync(layeditIndex); //同步到textarea
-            $("#Id").val(selectLineData.Id);
+            $("#Id").val(selectLineData.id);
             //加上判断，如果文件有改动则用multipart/form-data 方式提交表单,否则用ajax-post方式提交
             var file = $("input.layui-upload-file");
             if (file != undefined && file.val() != "") {
@@ -237,8 +242,8 @@
                         layer.close(popIndex);
                         layer.msg(result.msg, {time: 1500}, function () {
                             grid.reload({
-                                page: {
-                                    curr: 1
+                                request: {
+                                    pageName: 'cur'
                                 }
                             });
                         });
@@ -249,7 +254,7 @@
                 });
             } else {
                 //ajax request
-                data.field.id = selectLineData.Id;
+                data.field.id = selectLineData.id;
                 data.field.content = layedit.getContent(layeditIndex);
                 $.ajax({
                     type: 'POST',
@@ -267,8 +272,8 @@
                             layer.close(popIndex);
                             layer.msg(result.msg, {time: 1500}, function () {
                                 grid.reload({
-                                    page: {
-                                        curr: 1
+                                    request: {
+                                        pageName: 'cur'
                                     }
                                 });
                             });
@@ -310,8 +315,8 @@
                 where: {
                     keyword: v
                 }
-                , page: {
-                    curr: 1
+                , request: {
+                    pageName: 'cur'
                 }
             });
         });
@@ -328,8 +333,8 @@
         if (flag !== undefined && (flag == 'edit' || flag == 'add')) {
             appendStr = '  <div class="layui-form-item">\n' +
                     '    <div class="layui-input-block">\n' +
-                    '      <button class="layui-btn" lay-submit lay-filter="' + flag + 'Form">submit</button>\n' +
-                    '      <button type="reset" class="layui-btn layui-btn-primary">reset</button>\n' +
+                    '      <button class="layui-btn" lay-submit lay-filter="' + flag + 'Form">提交</button>\n' +
+                    '      <button type="reset" class="layui-btn layui-btn-primary">重置</button>\n' +
                     '    </div>\n' +
                     '  </div>\n';
             if (flag == 'add') {
@@ -342,13 +347,13 @@
         }
         return '<form class="layui-form" id="ajaxForm" enctype="multipart/form-data" style="padding: 15px"> \n' +
                 '  <div class="layui-form-item">\n' +
-                '    <label class="layui-form-label">title</label>\n' +
+                '    <label class="layui-form-label">标题: </label>\n' +
                 '    <div class="layui-input-block">\n' +
-                '      <input type="text" name="title" required lay-verify="required" placeholder="please input..." autocomplete="off" class="layui-input" value="' + Title + '">\n' +
+                '      <input type="text" name="title" required lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input" value="' + Title + '">\n' +
                 '    </div>\n' +
                 '  </div>\n' +
                 '  <div class="layui-form-item layui-form-text">\n' +
-                '    <label class="layui-form-label">picture</label>\n' +
+                '    <label class="layui-form-label">图片: </label>\n' +
                 '    <div class="layui-input-block">\n' +
                 '       <div style="width: 40%;height: 150px;border-style: dotted;cursor: pointer" id="upload">' +
                 appendStr1 +
@@ -356,9 +361,9 @@
                 '    </div>\n' +
                 '  </div>\n' +
                 '  <div class="layui-form-item layui-form-text">\n' +
-                '    <label class="layui-form-label">content</label>\n' +
+                '    <label class="layui-form-label">内容: </label>\n' +
                 '    <div class="layui-input-block">\n' +
-                '      <textarea placeholder="please input..." name="content" class="layui-textarea" id="LAY_demo1" style="display: none;resize: none">' + Content + '</textarea>\n' +
+                '      <textarea placeholder="请输入内容" name="content" class="layui-textarea" id="LAY_demo1" style="display: none;resize: none">' + Content + '</textarea>\n' +
                 '    </div>\n' +
                 '<input hidden="hidden" name="id" id="Id" />' +
                 '  </div>\n' +
