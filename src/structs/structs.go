@@ -62,22 +62,31 @@ type Menu struct {
 //correspond to article table
 type Article struct {
 	Id string `gorm:"primary_key" json:"id"`
-	Title string
+	Title string `validate:"required" json:"title"`
 	Picture string
-	Content template.HTML
-	State int
+	Content template.HTML `validate:"required" json:"content"`
+	State int `json:"State,string"`
 	CreatedAt string
 	UpdatedAt string
+	Validation
+}
+
+func (a *Article) Validate1() bool {
+	if e := validate.Struct(a); e != nil {
+		return false
+	}
+	return true
 }
 
 //correspond to category table
 type Category struct {
-	Id string `gorm:"primary_key"`   //默认为uint类型，但是数据库中存的是uuid值，所以不引入gorm.Model
-	CName string `json:"categoryName" validate:"required"`
-	CDescribe string `json:"categoryDescription" validate:"required"`
+	Id string `gorm:"primary_key" json:"Id"`   //默认为uint类型，但是数据库中存的是uuid值，所以不引入gorm.Model
+	CName string `json:"CName" validate:"required"`
+	CDescribe string `json:"CDescribe" validate:"required"`
 	CreatedAt string
 	UpdatedAt string
 	ArticleCount int
+	Validation
 }
 
 func (c *Category) Validate1() bool {
@@ -87,14 +96,6 @@ func (c *Category) Validate1() bool {
 	return true
 }
 
-func (c *Category) ValidateVar(vars ...string) bool {
-	for i := 0; i != len(vars); i += 2 {
-		if e := validate.Var(vars[i], vars[i+1]); e != nil {
-			return false
-		}
-	}
-	return true
-}
 
 //correspond to comment table
 type Comment struct {
@@ -163,4 +164,16 @@ func (g Grid) Pages(l int) (pages int) {
 	}
 	pages += g.TotalCount / l
 	return
+}
+
+type Validation struct {
+}
+
+func (v Validation) ValidateVars(vars ...string) bool {
+	for i := 0; i != len(vars); i += 2 {
+		if e := validate.Var(vars[i], vars[i+1]); e != nil {
+			return false
+		}
+	}
+	return true
 }
