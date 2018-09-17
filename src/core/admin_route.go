@@ -52,8 +52,7 @@ func AdminIndexGet(w http.ResponseWriter, r *http.Request) {
 
 //admin logout
 func AdminLogout(w http.ResponseWriter, r *http.Request) {
-	c := utils.RemoveSession()  //del session and cookie
-	w.Header().Set("Set-Cookie", c.String())
+	http.SetCookie(w, utils.RemoveSession())
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS"), Data: "/admin/login.html"})
 	return
 }
