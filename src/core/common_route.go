@@ -1,6 +1,7 @@
 package core
 
 import (
+	"bytes"
 	"errors"
 	"github.com/mojocn/base64Captcha"
 	"net/http"
@@ -20,6 +21,9 @@ var (
 	connect = utils.GetCoon
 	check = utils.CheckErr
 	paramJson = utils.ParamJson
+	buf = &bytes.Buffer{}
+	uid = utils.GetUUID
+	nowTime = utils.GetNowTime
 )
 
 //初始化template
