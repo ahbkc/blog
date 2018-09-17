@@ -212,8 +212,8 @@ func Middleware(next http.Handler) http.Handler {
 				if utils.Sessions.Name != "" && utils.Sessions.Value != "" {
 					next.ServeHTTP(w, r) //next
 				} else {
-					//删除cookie
-					http.SetCookie(w, utils.RemoveCookie(GetMapVal("COOKIE_NAME")))
+					c := utils.RemoveCookie(GetMapVal("COOKIE_NAME"))
+					w.Header().Add("Set-Cookie", c.String())
 					http.Redirect(w, r, proto + r.Host + "/admin/login.html", http.StatusFound) //redirect /admin/login
 				}
 			}
