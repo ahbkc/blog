@@ -47,7 +47,7 @@ func DetailPageGet(w http.ResponseWriter, r *http.Request) {
 	check(db.Table("comment").Where("relevancy_id = ?", article.Id).Limit(query.GetLimit()).Offset(query.Cur * query.Limit).Find(&comments).Error)
 	check(db.Table("comment").Where("relevancy_id = ?", article.Id).Count(&query.Grid.TotalCount).Error)
 
-	check(t.Execute(w, ComUserRtnVal("PAGE_Count", query.Pages(query.Limit), "PAGE_Curr", query.Cur, "Comments", comments, "Detail", article)))
+	check(t.Execute(w, ComUserRtnVal("PAGE_Count", query.Pages(query.Limit), "PAGE_Curr", query.Cur, "Comments", comments, "Detail", article, "Title", GetMapVal("DETAIL_TITLE"))))
 }
 
 //about
@@ -65,5 +65,5 @@ func GetAboutPage(w http.ResponseWriter, r *http.Request) {
 	check(db.Table("comment").Where("relevancy_id = ?", id).Limit(query.GetLimit()).Offset(query.Cur * query.Limit).Find(&comments).Error)
 	check(db.Table("comment").Where("relevancy_id = ?", id).Count(&query.TotalCount).Error)
 
-	t.Execute(w, ComUserRtnVal("Comments", comments, "RelevancyId", id, "PAGE_Count", query.Pages(query.Limit), "PAGE_Curr", query.Cur))
+	t.Execute(w, ComUserRtnVal("Comments", comments, "RelevancyId", id, "PAGE_Count", query.Pages(query.Limit), "PAGE_Curr", query.Cur, "Title", GetMapVal("ABOUT_TITLE")))
 }
