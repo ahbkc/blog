@@ -199,16 +199,20 @@ func Middleware(next http.Handler) http.Handler {
 		if strings.ToUpper(r.Method) != "GET" && strings.ToUpper(r.Method) != "POST" {
 			http.Error(w, "error", 405) //unrecognized request type
 		}
-		//w.Header().Add("Access-Control-Allow-Origin", "*") cros
 		if regex1.MatchString(r.URL.Path) && !regex2.MatchString(r.URL.Path) {
+			var proto string
+			if r.TLS == nil {
+				proto = "http://"
+			}else {
+				proto = "https://"
+			}
 			if cookie, _ := r.Cookie("hhhhh_cookie"); cookie == nil {
-				http.Redirect(w, r, "http://localhost:9099/admin/login.html", http.StatusFound) //redirect /admin/login
+				http.Redirect(w, r, proto + r.Host + "/admin/login.html", http.StatusFound) //redirect /admin/login
 			} else {
-				//verify session
 				if utils.Sessions.Name != "" && utils.Sessions.Value != "" {
 					next.ServeHTTP(w, r) //next
 				} else {
-					http.Redirect(w, r, "http://localhost:9099/admin/login.html", http.StatusFound) //redirect /admin/login
+					http.Redirect(w, r, proto + r.Host + "/admin/login.html", http.StatusFound) //redirect /admin/login
 				}
 			}
 		} else {
