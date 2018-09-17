@@ -33,14 +33,14 @@ func AdminGetArticleListAjaxPOST(w http.ResponseWriter, r *http.Request) {
 	check(db.Table("article").Select("id, title, picture, content, state, strftime('%Y-%m-%d %H:%M:%S', created_at) as created_at, strftime('%Y-%m-%d %H:%M:%S', updated_at) as updated_at").
 		Where("title like ? or content like ? or id = ?", "%"+query.Key+"%", "%"+query.Key+"%", query.Key).Limit(query.GetLimit()).Offset((query.Cur - 1) * query.Limit).Find(&list).Error)
 	check(db.Table("article").Select("id, title, picture, content, state, strftime('%Y-%m-%d %H:%M:%S', created_at) as created_at, strftime('%Y-%m-%d %H:%M:%S', updated_at) as updated_at").
-		Where("title like ? or content like ? or id = ?", "%"+query.Key+"%", "%"+query.Key+"%", query.Key).Limit(query.GetLimit()).Offset((query.Cur - 1) * query.Limit).Count(&query.TotalCount).Error)
-	json.NewEncoder(w).Encode(structs.TableGridResData{Code: 0, Msg: "success", Count: query.Pages(query.Limit), Data: list,})
+		Where("title like ? or content like ? or id = ?", "%"+query.Key+"%", "%"+query.Key+"%", query.Key).Count(&query.TotalCount).Error)
+	json.NewEncoder(w).Encode(structs.TableGridResData{Code: 0, Msg: "success", Count: query.TotalCount, Data: list,})
 	return
 }
 
 //add article
 func AdminAddArticleAddAjaxPost(w http.ResponseWriter, r *http.Request) {
-	check(r.ParseMultipartForm(20480))
+	check(r.ParseMultipartForm(204800))
 	picture, handler, err := r.FormFile("file")
 	jsonWriter := json.NewEncoder(w)
 	if err != nil {
@@ -54,23 +54,23 @@ func AdminAddArticleAddAjaxPost(w http.ResponseWriter, r *http.Request) {
 
 	buf.Reset() // reset
 	n, e := buf.ReadFrom(picture)
-	if n >= 20480 || e != nil {
+	if n >= 204800 || e != nil {
 		jsonWriter.Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
 	}
 
-	var suffix string
+	var suffix = "."
 	if strings.LastIndex(handler.Filename, ".") > 0 {
-		suffix = strings.SplitN(handler.Filename, ".", strings.LastIndex(handler.Filename, "."))[1]
+		suffix += strings.SplitN(handler.Filename, ".", strings.LastIndex(handler.Filename, "."))[1]
 	}
 	id := uid()
-	check(ioutil.WriteFile(filepath.Join(utils.Dir, GetMapVal("STATIC_FILE"), GetMapVal("STATIC_FILE_ARTICLE"), id, suffix), buf.Bytes(), 0666))
+	check(ioutil.WriteFile(filepath.Join(utils.Dir, GetMapVal("STATIC_FILE"), GetMapVal("STATIC_FILE_ARTICLE"), id + suffix), buf.Bytes(), 0666))
 
 	db := connect()
 	defer db.Close()
 
 	article.CreatedAt = nowTime()
 	article.Id = uid()
-	article.Picture = strings.Replace(filepath.Join(GetMapVal("STATIC_FILE"), GetMapVal("STATIC_FILE_ARTICLE"), id, suffix), "image", "img", -1)
+	article.Picture = strings.Replace(filepath.Join(GetMapVal("STATIC_FILE"), GetMapVal("STATIC_FILE_ARTICLE"), id + suffix), "image", "img", -1)
 	check(db.Save(&article).Error)
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 	return
@@ -114,7 +114,7 @@ func AdminEditArticleEditAjaxPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if v, ok := m["flag"]; ok && v != "post" {
-		check(r.ParseMultipartForm(20480))
+		check(r.ParseMultipartForm(204800))
 		picture, handler, err := r.FormFile("file")
 		if err != nil {
 			jsonWriter.Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
@@ -122,8 +122,9 @@ func AdminEditArticleEditAjaxPost(w http.ResponseWriter, r *http.Request) {
 		defer picture.Close()
 		buf.Reset() // reset
 		n, e := buf.ReadFrom(picture)
-		if n >= 20480 || e != nil {
+		if n >= 204800 || e != nil {
 			jsonWriter.Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
+			return
 		}
 
 		var suffix string

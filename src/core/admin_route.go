@@ -5,6 +5,7 @@ import (
 	"github.com/mojocn/base64Captcha"
 	"net/http"
 	"structs"
+	"time"
 	"utils"
 )
 
@@ -36,7 +37,7 @@ func AdminLoginPost(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: GetMapVal("USERNAME_OR_PASSWORD_IS_INCORRECT")})
 		return
 	}
-	c := utils.NewCookie(GetMapVal("COOKIE_NAME"), GetMapVal("TOKEN"), true)
+	c := utils.NewCookie(GetMapVal("COOKIE_NAME"), GetMapVal("TOKEN"), true, time.Now().Add(time.Hour))
 	w.Header().Set("Set-Cookie", c.String())
 	utils.SetSession(c.Name, c.Value)
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("LOGIN_SUCCESS"), Data: "/admin/index.html"})
@@ -52,7 +53,8 @@ func AdminIndexGet(w http.ResponseWriter, r *http.Request) {
 
 //admin logout
 func AdminLogout(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, utils.RemoveSession())
+	c := utils.RemoveSession()
+	http.SetCookie(w, &c)
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS"), Data: "/admin/login.html"})
 	return
 }
