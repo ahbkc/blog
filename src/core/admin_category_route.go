@@ -12,8 +12,7 @@ import (
 //admin category manage page
 func AdminCategoryGet(w http.ResponseWriter, r *http.Request) {
 	t = initTmpl("adminCategory.html")
-	check(err)
-	t.Execute(w, ComADMRtnVal("Menus", utils.GetMenuList(1)))
+	t.Execute(w, ComADMRtnVal("Menus", utils.GetMenuList(1), "Title", GetMapVal("ADMIN_CATEGORY_TITLE")))
 }
 
 //the foreground gets data asynchronously
@@ -64,7 +63,7 @@ func AdminDelCategoryDelAjaxPost(w http.ResponseWriter, r *http.Request) {
 	var category structs.Category
 	data := paramJson(r)
 	check(json.Unmarshal(data, &category))
-	if !category.ValidateVar(category.Id, "required") {
+	if !category.ValidateVars(category.Id, "required") {
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
 	}
 
@@ -72,7 +71,7 @@ func AdminDelCategoryDelAjaxPost(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	db.Where("id = ?", category.Id).First(&category)
 	jsonWriter := json.NewEncoder(w)
-	if category.ValidateVar(category.CreatedAt, "required", category.Id, "required") {
+	if category.ValidateVars(category.CreatedAt, "required", category.Id, "required") {
 		check(db.Delete(&category).Error)
 		jsonWriter.Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 		return
@@ -83,22 +82,22 @@ func AdminDelCategoryDelAjaxPost(w http.ResponseWriter, r *http.Request) {
 
 //edit category
 func AdminEditCategoryEditAjaxPost(w http.ResponseWriter, r *http.Request) {
-	var category structs.Category
+	var category, temp structs.Category
 	data := paramJson(r)
 	check(json.Unmarshal(data, &category))
-	if !category.Validate1() || !category.ValidateVar(category.Id, "required") {
+	if !category.Validate1() || !category.ValidateVars(category.Id, "required") {
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-98", Msg: GetMapVal("PARAMETERS_CANNOT_BE_EMPTY")})
 		return
 	}
 
 	db := connect()
 	defer db.Close()
-	db.Where("id = ?", category.Id).First(&category)
-	if !category.ValidateVar(category.Id, "required", category.CreatedAt, "required") {
+	db.Where("id = ?", category.Id).First(&temp)
+	if !category.ValidateVars(temp.Id, "required", temp.CreatedAt, "required") {
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: GetMapVal("DATA_DOES_NOT_EXIST")})
 		return
 	}
-	category.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+	category.UpdatedAt = nowTime()
 	check(db.Model(&category).Updates(category).Error)
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 	return
