@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"structs"
 	"sync"
 	"syscall"
@@ -148,7 +149,11 @@ func ParamJson(r *http.Request) (data []byte) {
 	//convert to map
 	var m = make(map[string]string)
 	for i, v := range val {
-		m[i] = v[0]
+		for _, k := range v {
+			if strings.TrimSpace(k) != "" && len(k) > 0 {
+				m[i] = k
+			}
+		}
 	}
 	data, e = json.Marshal(&m)
 	CheckErr(e)
@@ -175,12 +180,12 @@ func getMapVal(s string) string {
 	}
 }
 
-func NewCookie(n, v string, httpOnly bool) http.Cookie {
-	return http.Cookie{Name:n, Value:v, HttpOnly:httpOnly, Expires: time.Now().Add(time.Hour * 24)}
+func NewCookie(n, v string, httpOnly bool, t time.Time) http.Cookie {
+	return http.Cookie{Name:n, Value:v, HttpOnly:httpOnly, Expires:t}
 }
 
-func RemoveCookie(n, v string) http.Cookie {
-	return http.Cookie{Name:n, Value:v, Path:"/", MaxAge: -1, HttpOnly:true}
+func RemoveCookie(n string) http.Cookie {
+	return http.Cookie{Name:n, MaxAge: -1, Expires:time.Now().AddDate(-1, 0, 0)}
 }
 
 func SetSession(n, v string) {
@@ -189,7 +194,7 @@ func SetSession(n, v string) {
 
 func RemoveSession() http.Cookie {
 	Sessions = structs.Session{}
-	return RemoveCookie(getMapVal("COOKIE_NAME"), getMapVal("TOKEN"))
+	return RemoveCookie(getMapVal("COOKIE_NAME"))
 }
 
 //general uuid value
