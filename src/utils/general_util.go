@@ -1,12 +1,12 @@
 package utils
 
 import (
-	"crypto/md5"
 	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/satori/go.uuid"
 	"log"
 	"net/http"
 	"net/url"
@@ -33,7 +33,6 @@ var (
 	Method       = map[string]string{"GET": ".html", "POST": "_ajax"}
 	IdKeyD       string
 	StatikFS     http.FileSystem
-	m = md5.New()
 )
 
 type General struct {
@@ -191,4 +190,16 @@ func SetSession(n, v string) {
 func RemoveSession() http.Cookie {
 	Sessions = structs.Session{}
 	return RemoveCookie(getMapVal("COOKIE_NAME"), getMapVal("TOKEN"))
+}
+
+//general uuid value
+func GetUUID() string {
+	uid, err := uuid.NewV4()
+	CheckErr(err)
+	return uid.String()
+}
+
+//now time string value
+func GetNowTime() string {
+	return time.Now().Format("2006-01-02 15:04:05")
 }
