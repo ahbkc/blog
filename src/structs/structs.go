@@ -144,6 +144,13 @@ func (q *Query) GetLimit() int {
 	return q.Limit
 }
 
+func (q *Query) GetCur() int {
+	if q.Cur == 0 {
+		q.Cur = 1
+	}
+	return q.Cur
+}
+
 //verification cur and limit
 func (q *Query) Validate1() (result bool) {
 	err := validate.Struct(q)
