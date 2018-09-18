@@ -13,7 +13,17 @@ import (
 //admin article manage page
 func AdminArticleGet(w http.ResponseWriter, r *http.Request) {
 	t = initTmpl("adminArticle.html")
-	t.Execute(w, ComADMRtnVal("Menus", utils.GetMenuList(2), "Title", GetMapVal("ADMIN_ARTICLE_TITLE")))
+
+	db := connect()
+	defer db.Close()
+	var list []structs.Category
+	var str string
+	if e := db.Find(&list).Error; e == nil && len(list) > 0 {
+		data, err := json.Marshal(list)
+		check(err)
+		str = string(data)
+	}
+	t.Execute(w, ComADMRtnVal("Menus", utils.GetMenuList(2), "Title", GetMapVal("ADMIN_ARTICLE_TITLE"), "CategoriesJson", str))
 }
 
 //the foreground gets data asynchronously
@@ -30,10 +40,9 @@ func AdminGetArticleListAjaxPOST(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	var list []structs.Article
-	check(db.Table("article").Select("id, title, picture, content, state, strftime('%Y-%m-%d %H:%M:%S', created_at) as created_at, strftime('%Y-%m-%d %H:%M:%S', updated_at) as updated_at").
-		Where("title like ? or content like ? or id = ?", "%"+query.Key+"%", "%"+query.Key+"%", query.Key).Limit(query.GetLimit()).Offset((query.Cur - 1) * query.Limit).Find(&list).Error)
-	check(db.Table("article").Select("id, title, picture, content, state, strftime('%Y-%m-%d %H:%M:%S', created_at) as created_at, strftime('%Y-%m-%d %H:%M:%S', updated_at) as updated_at").
-		Where("title like ? or content like ? or id = ?", "%"+query.Key+"%", "%"+query.Key+"%", query.Key).Count(&query.TotalCount).Error)
+	check(db.Table("article").Select("id, title, picture, content, state, strftime('%Y-%m-%d %H:%M:%S', created_at) as created_at, strftime('%Y-%m-%d %H:%M:%S', updated_at) as updated_at, category_id").
+		Where("title like ? or content like ? or id = ?", "%"+query.Key+"%", "%"+query.Key+"%", query.Key).Limit(query.GetLimit()).Offset((query.Cur - 1) * query.Limit).Order("created_at desc").Find(&list).Error)
+	check(db.Table("article").Where("title like ? or content like ? or id = ?", "%"+query.Key+"%", "%"+query.Key+"%", query.Key).Count(&query.TotalCount).Error)
 	json.NewEncoder(w).Encode(structs.TableGridResData{Code: 0, Msg: "success", Count: query.TotalCount, Data: list,})
 	return
 }

@@ -18,9 +18,11 @@ func IndexGet(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	var articles []structs.Article
-	check(db.Table("article").Where("state = ?", 0).Limit(query.GetLimit()).Offset((query.GetCur() -1) * query.Limit).Find(&articles).Error)
+	check(db.Table("article").Where("state = ?", 0).Limit(query.GetLimit()).Offset((query.GetCur() -1) * query.Limit).Order("created_at desc").Find(&articles).Error)
 	check(db.Table("article").Where("state = ?", 0).Count(&query.TotalCount).Error)
-
+	for i := 0; i != len(articles); i ++ {
+		db.Model(&articles[i]).Related(&articles[i].C)
+	}
 	t.Execute(w, ComUserRtnVal("PAGE_Count", query.Grid.Pages(query.Limit) * 10, "PAGE_Curr", query.Cur, "List", articles, "Title", "blob 首页", "Url", "index"))
 }
 
@@ -44,7 +46,7 @@ func DetailPageGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var comments []structs.Comment
-	check(db.Table("comment").Where("relevancy_id = ?", article.Id).Limit(query.GetLimit()).Offset((query.Cur - 1) * query.Limit).Find(&comments).Error)
+	check(db.Table("comment").Where("relevancy_id = ?", article.Id).Limit(query.GetLimit()).Offset((query.Cur - 1) * query.Limit).Order("created_at desc").Find(&comments).Error)
 	check(db.Table("comment").Where("relevancy_id = ?", article.Id).Count(&query.Grid.TotalCount).Error)
 
 	check(t.Execute(w, ComUserRtnVal("PAGE_Count", query.Pages(query.Limit) * 10, "PAGE_Curr", query.Cur, "Comments", comments, "Detail", article, "Title", GetMapVal("DETAIL_TITLE"), "Url", "/detail/"+article.Id, "Id", article.Id)))
@@ -62,7 +64,7 @@ func GetAboutPage(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	var comments []structs.Comment
-	check(db.Table("comment").Where("relevancy_id = ?", id).Limit(query.GetLimit()).Offset((query.Cur - 1) * query.Limit).Find(&comments).Error)
+	check(db.Table("comment").Where("relevancy_id = ?", id).Limit(query.GetLimit()).Offset((query.Cur - 1) * query.Limit).Order("created_at desc").Find(&comments).Error)
 	check(db.Table("comment").Where("relevancy_id = ?", id).Count(&query.TotalCount).Error)
 
 	t.Execute(w, ComUserRtnVal("Comments", comments, "RelevancyId", id, "PAGE_Count", query.Pages(query.Limit) * 10, "PAGE_Curr", query.Cur, "Title", GetMapVal("ABOUT_TITLE"), "Url", "about", "Id", id))

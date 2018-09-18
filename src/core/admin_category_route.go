@@ -30,7 +30,7 @@ func AdminGetCategoryListAjaxPOST(w http.ResponseWriter, r *http.Request) {
 	var list []structs.Category
 
 	check(db.Table("category").Select("id, c_name , c_describe, strftime('%Y-%m-%d %H:%M:%S', created_at) as created_at, strftime('%Y-%m-%d %H:%M:%S', updated_at) as updated_at, article_count").
-		Where("c_name like ? or c_describe like ? or id = ?", "%"+query.Key+"%", "%"+query.Key+"%", query.Key).Limit(query.GetLimit()).Offset((query.Cur - 1) * query.Limit).Find(&list).Error)
+		Where("c_name like ? or c_describe like ? or id = ?", "%"+query.Key+"%", "%"+query.Key+"%", query.Key).Limit(query.GetLimit()).Offset((query.Cur - 1) * query.Limit).Order("created_at desc").Find(&list).Error)
 	check(db.Table("category").Select("id, c_name , c_describe, strftime('%Y-%m-%d %H:%M:%S', created_at) as created_at, strftime('%Y-%m-%d %H:%M:%S', updated_at) as updated_at, article_count").
 		Where("c_name like ? or c_describe like ? or id = ?", "%"+query.Key+"%", "%"+query.Key+"%", query.Key).Count(&query.TotalCount).Error)
 	json.NewEncoder(w).Encode(structs.TableGridResData{Code: 0, Msg: "success", Count: query.Pages(query.Limit), Data: list,

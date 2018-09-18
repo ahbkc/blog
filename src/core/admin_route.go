@@ -12,17 +12,22 @@ import (
 //admin login page --get
 func AdminLoginGet(w http.ResponseWriter, r *http.Request) {
 	t = initTmpl("adminLogin.html")
-	check(err)
-	t.Execute(w, ComADMRtnVal("Title", GetMapVal("ADMIN_LOGIN_PAGE")))
+	data := paramJson(r)
+	var m = make(map[string]string)
+	check(json.Unmarshal(data, &m))
+	var tips string
+	if v, ok := m["k"]; ok && v == flag && utils.SESSN == nil {
+		tips = GetMapVal("SESSION_EXPIRES")
+		flag = ""  //once after reset
+	}else if v, ok := m["k"]; ok && v != "" {
+		http.Redirect(w, r, "/admin/login.html", http.StatusFound)
+		return
+	}
+	t.Execute(w, ComADMRtnVal("Title", GetMapVal("ADMIN_LOGIN_PAGE"), "Tips", tips))
 }
 
 //admin login page --ajax post
 func AdminLoginPost(w http.ResponseWriter, r *http.Request) {
-	if utils.Sessions.Name != "" {
-		json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: GetMapVal("AccountHasBeenLoggedIn")})
-		return
-	}
-
 	var user structs.User
 	data := paramJson(r)
 	check(json.Unmarshal(data, &user))
@@ -37,9 +42,7 @@ func AdminLoginPost(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: GetMapVal("USERNAME_OR_PASSWORD_IS_INCORRECT")})
 		return
 	}
-	c := utils.NewCookie(GetMapVal("COOKIE_NAME"), GetMapVal("TOKEN"), true, time.Now().Add(time.Hour))
-	w.Header().Set("Set-Cookie", c.String())
-	utils.SetSession(c.Name, c.Value)
+	utils.SetSession(GetMapVal("COOKIE_NAME"), GetMapVal("TOKEN"), time.Minute * 30, w)
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("LOGIN_SUCCESS"), Data: "/admin/index.html"})
 	return
 }
