@@ -56,6 +56,7 @@
                 }
                 , {field: 'UpdatedAt', title: '最后更新时间', sort: true}
                 , {field: 'CreatedAt', title: '创建时间', sort: true}
+                , {field: 'CategoryId', hide: true}
                 , {fixed: 'right', width: 150, align: 'center', title: '操作', toolbar: '#barDemo'}
             ]]
             , where: {
@@ -143,7 +144,7 @@
                     type: 1,
                     skin: 'layui-layer-rim',
                     area: ['800px', '500px'],
-                    content: getPopFormat('show', data.title, data.Picture, data.content)
+                    content: getPopFormat('show', data.title, data.Picture, data.content, data.CategoryId)
                 });
                 form.render()
                 //构建一个默认的编辑器
@@ -187,7 +188,7 @@
                     type: 1,
                     skin: 'layui-layer-rim',
                     area: ['800px', '500px'],
-                    content: getPopFormat('edit', data.title, data.Picture, data.content)
+                    content: getPopFormat('edit', data.title, data.Picture, data.content, data.CategoryId)
                 });
                 form.render();
 
@@ -323,14 +324,16 @@
         });
     });
 
-    function getPopFormat(flag, Title, Picture, Content) {
+    function getPopFormat(flag, Title, Picture, Content, CategoryId) {
         if (Title === undefined || Picture === undefined || Content == undefined) {
             Title = '';
             Picture = '';
             Content = '';
         }
-        var appendStr = '';
-        var appendStr1 = '';
+        let appendStr = '';
+        let appendStr1 = '';
+        let selectCategory = '';
+        var categoriesJson = {{.CategoriesJson}};
         if (flag !== undefined && (flag == 'edit' || flag == 'add')) {
             appendStr = '  <div class="layui-form-item">\n' +
                     '    <div class="layui-input-block">\n' +
@@ -340,11 +343,32 @@
                     '  </div>\n';
             if (flag == 'add') {
                 appendStr1 = '<i class="layui-icon" style="font-size: 50px;position: relative;left: 40%;top:30%">&#xe654</i>';
+                for (let i = 0; i != categoriesJson.length; i ++){
+                    if (categoriesJson[i].CName == "默认分类") {
+                        selectCategory += '<option value="'+categoriesJson[i].Id+'" selected="">'+categoriesJson[i].CName+'</option>'
+                    }else {
+                        selectCategory += '<option value="'+categoriesJson[i].Id+'">'+categoriesJson[i].CName+'</option>'
+                    }
+                }
             } else {
                 appendStr1 = '<img src= "' + Picture + '" style="width: 100%;height: 100%;" />';
+                for (let i = 0; i != categoriesJson.length; i ++){
+                    if (categoriesJson[i].Id == CategoryId) {
+                        selectCategory += '<option value="'+categoriesJson[i].Id+'" selected="">'+categoriesJson[i].CName+'</option>'
+                    }else {
+                        selectCategory += '<option value="'+categoriesJson[i].Id+'">'+categoriesJson[i].CName+'</option>'
+                    }
+                }
             }
         } else {
-            appendStr1 = '<img src= "' + Picture + '" style="width: 100%;height: 100%;" />'
+            appendStr1 = '<img src= "' + Picture + '" style="width: 100%;height: 100%;" />';
+            for (let i = 0; i != categoriesJson.length; i ++){
+                if (categoriesJson[i].Id == CategoryId) {
+                    selectCategory += '<option value="'+categoriesJson[i].Id+'" selected="">'+categoriesJson[i].CName+'</option>'
+                }else {
+                    selectCategory += '<option value="'+categoriesJson[i].Id+'">'+categoriesJson[i].CName+'</option>'
+                }
+            }
         }
         return '<form class="layui-form" id="ajaxForm" enctype="multipart/form-data" style="padding: 15px"> \n' +
                 '  <div class="layui-form-item">\n' +
@@ -361,6 +385,14 @@
                 '       </div>' +
                 '    </div>\n' +
                 '  </div>\n' +
+                '<div class="layui-form-item">\n' +
+                '    <label class="layui-form-label">分类: </label>\n' +
+                '    <div class="layui-input-inline">\n' +
+                '      <select name="CategoryId">\n' +
+                selectCategory +
+                '      </select>\n' +
+                '    </div>\n' +
+                '  </div>' +
                 '  <div class="layui-form-item layui-form-text">\n' +
                 '    <label class="layui-form-label">内容: </label>\n' +
                 '    <div class="layui-input-block">\n' +
