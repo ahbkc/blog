@@ -20,9 +20,11 @@ import (
 
 const (
 	configureFileName = "/configure.json"
-	AdminHtmlPath = "/html/admin/"
-	HtmlPath = "/html/front/"
+	AdminHtmlPath     = "/html/admin/"
+	HtmlPath          = "/html/front/"
 )
+
+type Session structs.Session
 
 var (
 	ConfigureMap map[string]string
@@ -30,7 +32,7 @@ var (
 	Dir          string
 	errs         error
 	ch           chan string
-	Sessions     structs.Session
+	SESSN        *Session
 	Method       = map[string]string{"GET": ".html", "POST": "_ajax"}
 	IdKeyD       string
 	StatikFS     http.FileSystem
@@ -42,7 +44,7 @@ type General struct {
 func init() {
 	Dir, errs = os.Getwd() //get current path
 	CheckStartError(errs)
-	ReadConfigure()        //init read .json file
+	ReadConfigure() //init read .json file
 }
 
 //new General struct
@@ -53,14 +55,14 @@ func NewGeneral() *General {
 //Read Json Configuration file
 func ReadConfigure() {
 	//configure
-	configure, err := os.OpenFile(Dir + configureFileName, syscall.O_RDONLY, 0666)
+	configure, err := os.OpenFile(Dir+configureFileName, syscall.O_RDONLY, 0666)
 	CheckStartError(err)
 
 	err = json.NewDecoder(configure).Decode(&ConfigureMap)
 	CheckStartError(err)
 
 	//language
-	language, err := os.OpenFile(Dir + getMapVal("LANGUAGE_FILE") + "/" + getMapVal("LANGUAGE") + ".json", syscall.O_RDONLY, 0666)
+	language, err := os.OpenFile(Dir+getMapVal("LANGUAGE_FILE")+"/"+getMapVal("LANGUAGE")+".json", syscall.O_RDONLY, 0666)
 	CheckStartError(err)
 
 	err = json.NewDecoder(language).Decode(&LanguageMap)
@@ -85,7 +87,7 @@ func CheckErr(err error) {
 //start method
 //start http server and static resource httpServer
 func (g *General) Run(rou *mux.Router) {
-	db, err := gorm.Open(getMapVal("dialect"), Dir + getMapVal("db_path"))
+	db, err := gorm.Open(getMapVal("dialect"), Dir+getMapVal("db_path"))
 	CheckStartError(err)
 	err = db.Close()
 	CheckStartError(err)
@@ -129,7 +131,7 @@ func CheckToken(token string) bool {
 }
 
 func GetCoon() (db *gorm.DB) {
-	db, err := gorm.Open(getMapVal("dialect"), Dir + getMapVal("db_path"))
+	db, err := gorm.Open(getMapVal("dialect"), Dir+getMapVal("db_path"))
 	CheckErr(err)
 	db.SingularTable(true)
 	db.LogMode(true)
@@ -141,7 +143,7 @@ func ParamJson(r *http.Request) (data []byte) {
 	var e error
 	if r.Method == "GET" {
 		val, e = url.ParseQuery(r.URL.RawQuery)
-	}else if r.Method == "POST" {
+	} else if r.Method == "POST" {
 		e = r.ParseForm()
 		val = r.Form
 	}
@@ -173,27 +175,39 @@ func GetMenuList(flag uint8) []structs.Menu {
 func getMapVal(s string) string {
 	if v1 := ConfigureMap[s]; v1 != "" {
 		return v1
-	}else if v2 := LanguageMap[s]; v2 != "" {
+	} else if v2 := LanguageMap[s]; v2 != "" {
 		return v2
-	}else {
+	} else {
 		panic(errors.New("no Match Value"))
 	}
 }
 
 func NewCookie(n, v string, httpOnly bool, t time.Time) http.Cookie {
-	return http.Cookie{Name:n, Value:v, HttpOnly:httpOnly, Expires:t}
+	return http.Cookie{Name: n, Value: v, HttpOnly: httpOnly, Expires: t}
 }
 
 func RemoveCookie(n string) http.Cookie {
-	return http.Cookie{Name:n, MaxAge: -1, Expires:time.Now().AddDate(-1, 0, 0)}
+	return http.Cookie{Name: n, MaxAge: -1, Expires: time.Now().AddDate(-1, 0, 0)}
 }
 
-func SetSession(n, v string) {
-	Sessions = structs.Session{Name:n, Value:v, LoginTime:time.Now()}
+func SetSession(n, v string, expires time.Duration, w http.ResponseWriter) {
+	t := time.Now()
+	SESSN = &Session{Name: n, Value: v, LoginTime: t, ExpiresTime: t.Add(expires)}
+	c := NewCookie(n, v, true, t.Add(expires + time.Hour))
+	w.Header().Set("Set-Cookie", c.String())
+	var g sync.Once
+	go func() {
+		g.Do(func() {
+			select {
+			case <-time.After(SESSN.ExpiresTime.Sub(SESSN.LoginTime)):
+				SESSN = nil //empty
+			}
+		})
+	}()
 }
 
 func RemoveSession() http.Cookie {
-	Sessions = structs.Session{}
+	SESSN = nil
 	return RemoveCookie(getMapVal("COOKIE_NAME"))
 }
 
