@@ -147,6 +147,8 @@ var routes = []Route{
 	},
 }
 
+var flag string
+
 //build a router
 func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true).UseEncodedPath()
@@ -199,24 +201,30 @@ func Middleware(next http.Handler) http.Handler {
 		if strings.ToUpper(r.Method) != "GET" && strings.ToUpper(r.Method) != "POST" {
 			http.Error(w, "error", 405) //unrecognized request type
 		}
+		var proto string
+		if r.TLS == nil {
+			proto = "http://"
+		}else {
+			proto = "https://"
+		}
 		if regex1.MatchString(r.URL.Path) && !regex2.MatchString(r.URL.Path) {
-			var proto string
-			if r.TLS == nil {
-				proto = "http://"
-			}else {
-				proto = "https://"
-			}
 			if cookie, _ := r.Cookie(GetMapVal("COOKIE_NAME")); cookie == nil {
 				http.Redirect(w, r, proto + r.Host + "/admin/login.html", http.StatusFound) //redirect /admin/login
 			} else {
-				if utils.Sessions.Name != "" && utils.Sessions.Value != "" {
+				if utils.SESSN != nil {
 					next.ServeHTTP(w, r) //next
 				} else {
 					c := utils.RemoveCookie(GetMapVal("COOKIE_NAME"))
 					w.Header().Add("Set-Cookie", c.String())
-					http.Redirect(w, r, proto + r.Host + "/admin/login.html", http.StatusFound) //redirect /admin/login
+					flag = uid()[0:8]
+					http.Redirect(w, r, proto + r.Host + "/admin/login.html?k=" + flag, http.StatusFound) //redirect /admin/login
 				}
 			}
+		} else if strings.Contains(r.URL.Path, "/admin/login") {
+			if utils.SESSN != nil {
+				http.Redirect(w, r, proto + r.Host + "/admin/index.html", http.StatusFound)  //redirect /admin/index
+			}
+			next.ServeHTTP(w, r)
 		} else {
 			next.ServeHTTP(w, r) //next
 		}
