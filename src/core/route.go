@@ -145,6 +145,18 @@ var routes = []Route{
 		"POST",
 		AdminEditArticleEditStateAjaxPost,
 	},
+	{
+		"admin_comment_index",
+		"/admin/comment/index",
+		"GET",
+		AdminCommentGet,
+	},
+	{
+		"admin_resource_index",
+		"/admin/resource/index",
+		"GET",
+		AdminResourceGet,
+	},
 }
 
 var flag string
