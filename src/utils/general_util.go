@@ -162,12 +162,11 @@ func ParamJson(r *http.Request) (data []byte) {
 	return
 }
 
-func GetMenuList(flag uint8) []structs.Menu {
-	var menus = []structs.Menu{
-		{Name: getMapVal("MENU_INDEX"), Url: "/admin/index.html"},
-		{Name: getMapVal("MENU_CATEGORY"), Url: "/admin/category/index.html",},
-		{Name: getMapVal("MENU_ARTICLE"), Url: "/admin/article/index.html"},
-	}
+func GetMenuList(flag uint8) []structs.Resource {
+	db := GetCoon()
+	defer db.Close()
+	var menus []structs.Resource
+	db.Table("resource").Where("state = ?", 0).Order("sort asc").Find(&menus)
 	menus[flag].Class = "layui-this"
 	return menus
 }
