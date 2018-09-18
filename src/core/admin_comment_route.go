@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"structs"
 	"time"
+	"utils"
 )
 
 //comment article
@@ -32,4 +33,9 @@ func CommentLeaveMsg(w http.ResponseWriter, r *http.Request) {
 	check(db.Save(&comment).Error)
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 	return
+}
+
+func AdminCommentGet(w http.ResponseWriter, r *http.Request) {
+	t = initTmpl("adminComment.html")
+	t.Execute(w, ComADMRtnVal("Menus", utils.GetMenuList(3), "Title", GetMapVal("ADMIN_COMMENT_TITLE")))
 }
