@@ -17,6 +17,7 @@ type Session struct {
 	Name string
 	Value string
 	LoginTime time.Time
+	ExpiresTime time.Time
 }
 
 type User struct {
@@ -69,6 +70,8 @@ type Article struct {
 	CreatedAt string
 	UpdatedAt string
 	Validation
+	CategoryId string
+	C Category
 }
 
 func (a *Article) Validate1() bool {
