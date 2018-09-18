@@ -24,5 +24,7 @@
   "ADMIN_CATEGORY_TITLE": "分类管理",
   "ADMIN_ARTICLE_TITLE": "文章管理",
   "DETAIL_TITLE": "文章详情",
-  "ABOUT_TITLE": "关于"
+  "ABOUT_TITLE": "关于",
+  "ADMIN_COMMENT_TITLE": "评论管理",
+  "ADMIN_RESOURCE_TITLE": "资源管理"
 }
