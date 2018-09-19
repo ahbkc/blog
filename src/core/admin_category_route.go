@@ -72,9 +72,11 @@ func AdminDelCategoryDelAjaxPost(w http.ResponseWriter, r *http.Request) {
 
 	db := connect()
 	defer db.Close()
+	var count int
 	db.Where("id = ?", category.Id).First(&category)
+	db.Table("article").Where("category_id = ?", category.Id).Count(&count)
 	jsonWriter := json.NewEncoder(w)
-	if category.ValidateVars(category.CreatedAt, "required", category.Id, "required") {
+	if category.ValidateVars(category.CreatedAt, "required", category.Id, "required") && category.State <= 0 && count <= 0 {
 		check(db.Delete(&category).Error)
 		jsonWriter.Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 		return
