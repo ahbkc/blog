@@ -236,6 +236,8 @@ func Middleware(next http.Handler) http.Handler {
 			if utils.SESSN != nil {
 				http.Redirect(w, r, proto + r.Host + "/admin/index.html", http.StatusFound)  //redirect /admin/index
 			}
+			c := utils.RemoveCookie(GetMapVal("COOKIE_NAME"))
+			w.Header().Add("Set-Cookie", c.String())
 			next.ServeHTTP(w, r)
 		} else {
 			next.ServeHTTP(w, r) //next
