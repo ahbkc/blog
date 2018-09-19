@@ -3,9 +3,10 @@
     //JavaScript代码区域
     let $;
     let layer;
-    layui.use(['layer'], function () {
+    layui.use(['layer', 'element'], function () {
         $ = layui.jquery;
         layer = layui.layer;
+        element = layui.element;
     });
 
     let logout = function () {
