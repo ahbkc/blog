@@ -54,10 +54,16 @@ type TableGridResData struct {
 }
 
 //menu struct
-type Menu struct {
+type Resource struct {
+	Id string  `gorm:"primary_key" json:"Id"`
 	Name string
 	Url string
 	Class string
+	Parent int
+	State int
+	CreatedAt string
+	UpdatedAt string
+	Sort int
 }
 
 //correspond to article table
@@ -89,6 +95,7 @@ type Category struct {
 	CreatedAt string
 	UpdatedAt string
 	ArticleCount int
+	State int
 	Validation
 }
 
