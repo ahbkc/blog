@@ -14,7 +14,8 @@ import (
 var (
 	ADMRtnMap =  map[string]interface{}{"JsLoginErrMsg": GetMapVal("LOGIN_FAILED"), "ConsoleName": GetMapVal("ADMIN_INDEX_CONSOLE_NAME"),
 "AjaxErrorMsg": GetMapVal("AJAX_ERROR_TIPS_MESSAGE"), "Welcome": GetMapVal("ADMIN_FOOTER_MESSAGE"),
-"ConfirmLogoutTips": GetMapVal("CONFIRM_LOGOUT_TIPS"), "LogoutName": GetMapVal("ADMIN_INDEX_LOGOUT_NAME")}
+"ConfirmLogoutTips": GetMapVal("CONFIRM_LOGOUT_TIPS"), "LogoutName": GetMapVal("ADMIN_INDEX_LOGOUT_NAME"),
+	"UserName": "ahbkc"}
 	UserRtnMap = make(map[string]interface{})
 	t *template.Template
 	err error
