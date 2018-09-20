@@ -3,11 +3,95 @@
     //JavaScript代码区域
     let $;
     let layer;
-    layui.use(['layer', 'element'], function () {
+    var form;
+    let element;
+    layui.use(['layer', 'element', 'form'], function () {
         $ = layui.jquery;
         layer = layui.layer;
         element = layui.element;
+        form = layui.form;
+
+        form.on('submit(update)', function (data) {
+            $.ajax({
+                type: 'POST',
+                url: '/admin/user/updateInfo_ajax',
+                data: data.field,
+                contentType: 'application/x-www-form-urlencoded',
+                dataType: 'json',
+                async: true,
+                success: function (result, textStatus) {
+                    if (result.code != 100) {
+                        layer.msg(result.msg)
+                    } else if (result.code == 100) {
+                        layer.msg(result.msg, {time: 1500}, function () {
+                            window.location.reload()
+                        });
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    layer.msg('{{.AJAX_ERROR_TIPS_MESSAGE}}')
+                }
+            })
+            return false;
+        });
     });
+
+    function info() {
+        layer.open({
+            type: 1,
+            title: '个人信息',
+            area: ['380px', '300px'],
+            content: '<div class="layui-form" style="padding-top:20px;width:90%;">\n' +
+                    '            <div class="layui-form-item">\n' +
+                    '                <label class="layui-form-label">用户名</label>\n' +
+                    '                <div class="layui-input-block">\n' +
+                    '                    <input type="text" name="username" placeholder="请输入" autocomplete="off" class="layui-input" value="{{.User.Username}}">\n' +
+                    '                </div>\n' +
+                    '            </div>\n' +
+                    '<input hidden="hidden" value="{{.User.Id}}" />' +
+                    '            <div class="layui-form-item layui-form-text">\n' +
+                    '                <label class="layui-form-label">个人简介</label>\n' +
+                    '                <div class="layui-input-block">\n' +
+                    '                    <textarea placeholder="请输入内容" name="bio" class="layui-textarea" style="resize:none;">{{.User.Bio}}</textarea>\n' +
+                    '                </div>\n' +
+                    '            </div>\n' +
+                    '            <div class="layui-form-item">\n' +
+                    '                <div class="layui-input-block">\n' +
+                    '                    <button class="layui-btn" lay-submit lay-filter="update">修改</button>\n' +
+                    '                </div>\n' +
+                    '            </div>\n' +
+                    '        </div>'
+        });
+    }
+
+    function passwordTips() {
+        layer.prompt({title: '修改密码', formType: 1, maxlength: 20, value: ''}, function(pass, index){
+            if (pass.length > 0 && pass.length >= 8 && pass.length <= 10) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/admin/user/updatePassword_ajax',
+                    data: {Id: '{{.User.Id}}', Password: pass},
+                    contentType: 'application/x-www-form-urlencoded',
+                    dataType: 'json',
+                    async: true,
+                    success: function (result, textStatus) {
+                        if (result.code != 100) {
+                            layer.msg(result.msg)
+                        } else if (result.code == 100) {
+                            layer.msg(result.msg, {time: 1500}, function () {
+                                window.location.reload()
+                            });
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        layer.msg('{{.AjaxErrorMsg}}')
+                    }
+                })
+            } else {
+                layer.msg('密码长度必须要大于等于8位, 小于等于10位')
+            }
+        });
+    }
 
     let logout = function () {
         //弹出confirm窗口

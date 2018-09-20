@@ -1,16 +1,16 @@
 <div class="layui-header">
     <div class="layui-logo">{{.ConsoleName}}</div>
     <ul class="layui-nav layui-layout-right">
-        <li class="layui-nav-item">
+        <li class="layui-nav-item" lay-unselect>
             <a href="javascript:;">
                 <img src="/img/avatar.png" class="layui-nav-img">
             {{.UserName}}
             </a>
              <dl class="layui-nav-child">
-                 <dd><a href="">基本资料</a></dd>
-                 <dd><a href="">安全设置</a></dd>
+                 <dd><a href="javascript:info();">基本资料</a></dd>
+                 <dd><a href="javascript:passwordTips();">修改密码</a></dd>
+                 <dd><a href="javascript:logout();">{{.LogoutName}}</a></dd>
               </dl>
         </li>
-        <li class="layui-nav-item"><a href="javascript:logout();">{{.LogoutName}}</a></li>
     </ul>
 </div>
