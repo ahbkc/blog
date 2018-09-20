@@ -7,19 +7,59 @@
 {{template "admin_side_block.tmpl" .}}
     <div class="layui-body">
         <div style="padding: 15px;">
-            <div>
-                <span>当前文章数: {{.Article}}个</span>
-            </div>
-            <div>
-                <span>当前分类数: {{.Category}}个</span>
-            </div>
-            <div>
-                <span>当前评论数：{{.Comment}}个</span>
-            </div>
+            <div id="main" style="width: 1000px;height:500px;"></div>
         </div>
     </div>
 {{template "admin_footer_block.tmpl" .}}
 </div>
 {{template "admin_script_block.tmpl" .}}
+<script src="/resource/plugins/echarts/echarts.min.js"></script>
+<script type="text/javascript">
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('main'));
+
+    // 指定图表的配置项和数据
+    option = {
+        title : {
+            text: '后台数据图表',
+            subtext: '每天统计',
+            x:'center'
+        },
+        tooltip : {
+            trigger: 'item',
+            formatter: "{a} <br/>{b} : {c} ({d}%)"
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left',
+            data: ['文章','分类','评论','访问','其它']
+        },
+        series : [
+            {
+                name: '数据统计',
+                type: 'pie',
+                radius : '55%',
+                center: ['50%', '60%'],
+                data:[
+                    {value:335, name:'文章'},
+                    {value:310, name:'分类'},
+                    {value:234, name:'评论'},
+                    {value:135, name:'访问'},
+                    {value:1548, name:'其它'}
+                ],
+                itemStyle: {
+                    emphasis: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }
+        ]
+    };
+
+    // 使用刚指定的配置项和数据显示图表。
+    myChart.setOption(option);
+</script>
 </body>
 </html>
