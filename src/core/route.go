@@ -157,6 +157,36 @@ var routes = []Route{
 		"GET",
 		AdminResourceGet,
 	},
+	{
+		"admin_user_updateInfo",
+		"/admin/user/updateInfo",
+		"POST",
+		AdminUserUpdateInfo,
+	},
+	{
+		"admin_user_updatePassword",
+		"/admin/user/updatePassword",
+		"POST",
+		AdminUserUpdatePassword,
+	},
+	{
+		"admin_comment_list",
+		"/admin/comment/list",
+		"POST",
+		AdminGetCommentListAjaxPOST,
+	},
+	{
+		"admin_comment_del",
+		"/admin/comment/del",
+		"POST",
+		AdminDelCommentAjaxPOST,
+	},
+	{
+		"admin_comment_disable",
+		"/admin/comment/disable",
+		"POST",
+		AdminDisableCommentAjaxPOST,
+	},
 }
 
 var flag string
