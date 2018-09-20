@@ -187,6 +187,12 @@ var routes = []Route{
 		"POST",
 		AdminDisableCommentAjaxPOST,
 	},
+	{
+		"admin_resource_list",
+		"/admin/resource/list",
+		"POST",
+		AdminGetResourceListAjaxPOST,
+	},
 }
 
 var flag string
