@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+{{template "admin_head_block.tmpl" .}}
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+{{template "admin_header_block.tmpl" .}}
+{{template "admin_side_block.tmpl" .}}
+    <div class="layui-body">
+        <div style="padding: 15px;">
+            <div id="toolbar">
+                <div style="text-align: right;">
+                    <div class="layui-btn-container">
+                        <button id="searchBtn" class="layui-btn layui-btn-primary">搜索</button>
+                        <button id="addBtn" class="layui-btn">添加</button>
+                        <button id="exportBtn" class="layui-btn"><i class="layui-icon">&#xe601;</i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="table-show">
+                <table id="demo" lay-filter="demo" lay-data="{id: 'demo'}"></table>
+            </div>
+        </div>
+    </div>
+{{template "admin_footer_block.tmpl" .}}
+</div>
+{{template "admin_script_block.tmpl" .}}
