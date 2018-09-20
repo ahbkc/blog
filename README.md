@@ -5,6 +5,10 @@
 
 数据库使用的是Sqlite3
 
+orm 使用的是gorm
+
+路由使用的是 github.com/gorilla/mux
+
 语言是  golang
 
 
