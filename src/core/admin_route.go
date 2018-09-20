@@ -28,17 +28,18 @@ func AdminLoginGet(w http.ResponseWriter, r *http.Request) {
 
 //admin login page --ajax post
 func AdminLoginPost(w http.ResponseWriter, r *http.Request) {
-	var user structs.User
+	var u, temp structs.User
 	data := paramJson(r)
-	check(json.Unmarshal(data, &user))
-	result := base64Captcha.VerifyCaptcha(utils.IdKeyD, user.VerifyCode)
+	check(json.Unmarshal(data, &u))
+	result := base64Captcha.VerifyCaptcha(utils.IdKeyD, u.VerifyCode)
 	if !result {
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: GetMapVal("VerifyCode_Error")})
 		return
 	}
-	name := GetMapVal( "USER_NAME")
-	password := GetMapVal("PASSWORD")
-	if user.UserName != name || user.GetMd5Pwd() != password {
+
+	db := connect()
+	defer db.Close()
+	if e := db.Model(&temp).Where("username = ? and password = ?", u.Username, u.GetMd5Pwd()).Find(&temp).Error; e != nil || temp.ValidateVars(u.Id, "required"){
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: GetMapVal("USERNAME_OR_PASSWORD_IS_INCORRECT")})
 		return
 	}
@@ -50,7 +51,15 @@ func AdminLoginPost(w http.ResponseWriter, r *http.Request) {
 //admin index page  --get
 func AdminIndexGet(w http.ResponseWriter, r *http.Request) {
 	t = initTmpl("adminIndex.html")
-	t.Execute(w, ComADMRtnVal("Menus", utils.GetMenuList(0), "Article", 100, "Category", 100, "Comment", 100, "Title", GetMapVal("ADMIN_INDEX_TITLE")))
+
+	//get userInfo
+	var u structs.User
+	db := connect()
+	defer db.Close()
+	db.Table("user").First(&u)
+
+	t.Execute(w, ComADMRtnVal("Menus", utils.GetMenuList(0), "Article", 100, "Category", 100,
+		"Comment", 100, "Title", GetMapVal("ADMIN_INDEX_TITLE"), "User", u))
 	return
 }
 
@@ -60,4 +69,38 @@ func AdminLogout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &c)
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS"), Data: "/admin/login.html"})
 	return
+}
+
+//update userInfo
+func AdminUserUpdateInfo(w http.ResponseWriter, r *http.Request) {
+	var u structs.User
+	data := paramJson(r)
+	check(json.Unmarshal(data, &u))
+
+	db := connect()
+	defer db.Close()
+	jsonWriter := json.NewEncoder(w)
+	if e := db.Model(&u).Updates(u).Error; e != nil {
+		jsonWriter.Encode(structs.ResData{Code: "-99", Msg: GetMapVal("EXECUTION_FAILED")})
+		return
+	}
+	jsonWriter.Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
+}
+
+//update user password
+func AdminUserUpdatePassword(w http.ResponseWriter, r *http.Request) {
+	var u, temp structs.User
+	data := paramJson(r)
+	check(json.Unmarshal(data, &u))
+
+	db := connect()
+	defer db.Close()
+	jsonWriter := json.NewEncoder(w)
+	if e := db.Model(&temp).Where("id = ?", u.Id).Find(&temp).Error; e != nil || !temp.ValidateVars(temp.Id, "required") {
+		jsonWriter.Encode(structs.ResData{Code: "-99", Msg: GetMapVal("EXECUTION_FAILED")})
+		return
+	}
+
+	check(db.Model(&structs.User{}).Where("id = ?", temp.Id).Update("password", u.GetMd5Pwd()).Error)
+	jsonWriter.Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
 }
