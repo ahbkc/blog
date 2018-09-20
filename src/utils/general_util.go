@@ -181,8 +181,8 @@ func getMapVal(s string) string {
 	}
 }
 
-func NewCookie(n, v string, httpOnly bool, t time.Time) http.Cookie {
-	return http.Cookie{Name: n, Value: v, HttpOnly: httpOnly, Expires: t}
+func NewCookie(n, v string, httpOnly bool) http.Cookie {
+	return http.Cookie{Name: n, Value: v, HttpOnly: httpOnly}
 }
 
 func RemoveCookie(n string) http.Cookie {
@@ -192,7 +192,7 @@ func RemoveCookie(n string) http.Cookie {
 func SetSession(n, v string, expires time.Duration, w http.ResponseWriter) {
 	t := time.Now()
 	SESSN = &Session{Name: n, Value: v, LoginTime: t, ExpiresTime: t.Add(expires)}
-	c := NewCookie(n, v, true, t.Add(expires + time.Hour))
+	c := NewCookie(n, v, true)
 	w.Header().Set("Set-Cookie", c.String())
 	var g sync.Once
 	go func() {
