@@ -21,9 +21,17 @@ type Session struct {
 }
 
 type User struct {
-	UserName string `json:"userName"`
+	Id string
+	Username string
 	Password string `json:"password"`
 	VerifyCode string `json:"verifyCode"`
+	Bio string
+	AvatarUrl string
+	State int
+	Token string
+	CreatedAt string
+	UpdatedAt string
+	Validation
 }
 
 func (u *User) GetMd5Pwd() string {
@@ -109,7 +117,7 @@ func (c *Category) Validate1() bool {
 
 //correspond to comment table
 type Comment struct {
-	Id string `gorm:"primary_key"json:"id"`
+	Id string `gorm:"primary_key"json:"Id"`
 	CommentUserName string
 	CommentUserEmail string
 	CommentUserContent string
@@ -117,6 +125,8 @@ type Comment struct {
 	CreatedAt string
 	UpdatedAt string
 	RelevancyId string `json:"relevancyId"`
+	State int `json:"State,string"`
+	Validation
 }
 
 //correspond to log table
@@ -130,13 +140,6 @@ type ArticleCategory struct {
 	gorm.Model
 	ArticleId string
 	CategoryId string
-}
-
-//correspond to article_comment table
-type ArticleComment struct {
-	gorm.Model
-	ArticleId string
-	CommentId string
 }
 
 //use query data
