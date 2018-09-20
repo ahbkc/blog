@@ -24,3 +24,240 @@
 {{template "admin_footer_block.tmpl" .}}
 </div>
 {{template "admin_script_block.tmpl" .}}
+<script>
+    var grid;
+    var selectLineData;
+    layui.use(['layer', 'table', 'form'], function () {
+        $ = layui.jquery;
+        layer = layui.layer;
+        let form = layui.form;
+        let table = layui.table;
+        grid = table.render({
+            elem: '#demo'
+            , height: 500
+            , url: '/admin/resource/list_ajax'
+            , page: true
+            , method: 'post'
+            , cols: [[
+                {type: 'checkbox'}
+                , {field: 'Id', title: 'ID', width: 300}
+                , {field: 'Name', title: '名称', width: 100}
+                , {field: 'Url', title: '地址', width: 200}
+                , {field: 'Parent', title: '上级ID', width: 90}
+                , {
+                    field: 'State', title: '状态', width: 90, templet: function (v) {
+                        return '<div><input type="checkbox" init="' + v.State + '" value="' + v.Id + '" lay-filter="switchState" ' + (v.State == 0 ? 'checked="checked"' : "") + ' lay-text="显|隐" lay-skin="switch" title="状态"></div>'
+                    }, unresize: true
+                }
+                , {field: 'CreatedAt', title: '创建时间', sort: true}
+                , {field: 'UpdatedAt', title: '最后更新时间', sort: true}
+                , {fixed: 'right', width: 100, align: 'center', title: '操作', toolbar: '#barDemo'}
+            ]]
+            , where: {
+                keyword: ""
+            },
+            request: {
+                pageName: 'cur'
+            }
+        });
+
+        $("#searchBtn").on("click", function () {
+            //动态插入搜索框
+            var v = $(this)
+            var rEle = v.parent().parent()
+            if (v.hasClass('layui-btn-primary')) {
+                v.removeClass('layui-btn-primary')
+                if (rEle !== undefined && rEle.length > 0) {
+                    rEle.css('display', 'inline-block')
+                    rEle.css('width', '29.8%')
+                }
+                const tp = '<div class="layui-anim layui-anim-scale" style="text-align: left;display: inline-block;width: 69.8%;">\n' +
+                        '                    <input id="searchInput" type="text" name="title" required style="width: 90%;display: inline-block" lay-verify="required" placeholder="请输入分类名称、分类说明或id查找" autocomplete="off" class="layui-input">\n' +
+                        '                    <i id="searchIcon" class="layui-icon" style="display: inline-block;cursor: pointer;font-size: 26px;position: relative;top: 5px;right: 40px">&#xe615;</i>\n' +
+                        '                </div>';
+                $("#toolbar").prepend(tp)
+            } else {
+                v.addClass('layui-btn-primary');
+                var child = $("#toolbar").find('.layui-anim.layui-anim-scale');
+                rEle.css('display', '');
+                rEle.css('width', '');
+                child.remove()
+            }
+        });
+        table.on('tool(demo)', function (obj) {
+            var data = obj.data;
+            var layEvent = obj.event;
+            var tr = obj.tr;
+            selectLineData = data;
+
+            if (layEvent === 'detail') {
+                //show category message
+                layer.open({
+                    type: 1,
+                    area: ['460px', '350px'],
+                    content: getPopFormat('show', data)
+                });
+                form.render()
+            } else if (layEvent === 'del') {
+                layer.confirm('Are you delete ?', function (index) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/admin/comment/del_ajax',
+                        data: {id: data.Id},
+                        contentType: 'application/x-www-form-urlencoded',
+                        dataType: 'json',
+                        async: true,
+                        success: function (result, textStatus) {
+                            if (result.code != 100) {
+                                layer.msg(result.msg)
+                            } else if (result.code == 100) {
+                                layer.close(index);
+                                layer.msg(result.msg, {time: 1500}, function () {
+                                    grid.reload({
+                                        request: {
+                                            pageName: 'cur'
+                                        }
+                                    });
+                                });
+                            }
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            layer.msg('{{.AJAX_ERROR_TIPS_MESSAGE}}')
+                        }
+                    });
+                });
+            } else if (layEvent === 'reply') {
+                layer.prompt({title: '输入回复内容', formType: 1}, function(text, index){
+                    layer.close(index);
+                    layer.msg(text);
+                });
+            } else if (layEvent === 'disable') {
+                layer.confirm('确定要隐藏该评论吗 ?', function (index) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/admin/comment/disable_ajax',
+                        data: {Id: data.Id},
+                        contentType: 'application/x-www-form-urlencoded',
+                        dataType: 'json',
+                        async: true,
+                        success: function (result, textStatus) {
+                            if (result.code != 100) {
+                                layer.msg(result.msg)
+                            } else if (result.code == 100) {
+                                layer.close(index);
+                                layer.msg(result.msg, {time: 1500}, function () {
+                                    grid.reload({
+                                        request: {
+                                            pageName: 'cur'
+                                        }
+                                    });
+                                });
+                            }
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            layer.msg('{{.AJAX_ERROR_TIPS_MESSAGE}}')
+                        }
+                    });
+                });
+            }
+        });
+
+        $(document).on('click', '#searchIcon', function () {
+            var v = $("#searchInput").val();
+            if (v == undefined || v == "") {
+                v = ''
+            }
+            grid.reload({
+                where: {
+                    key: v
+                },
+                request: {
+                    pageName: 'cur'
+                }
+            });
+        })
+
+        //监听状态操作
+        form.on('switch(switchState)', function (obj) {
+            var checked = obj.elem.checked
+            var elem = $(obj.elem)
+
+            $.ajax({
+                type: 'POST',
+                url: '/admin/comment/disable_ajax',
+                data: {id: obj.value, state: checked ? '0' : '-1'},
+                contentType: 'application/x-www-form-urlencoded',
+                dataType: 'json',
+                async: true,
+                success: function (result, textStatus) {
+                    if (result.code != 100) {
+                        layer.msg(result.msg, {time: 1500}, function () {
+                            grid.reload({
+                                request: {
+                                    pageName: 'cur'
+                                }
+                            });
+                        });
+                    } else if (result.code == 100) {
+                        layer.msg(result.msg, {time: 1500}, function () {
+                            grid.reload({
+                                request: {
+                                    pageName: 'cur'
+                                }
+                            });
+                        });
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    layer.msg('{{.AJAX_ERROR_TIPS_MESSAGE}}', {time: 1500}, function () {
+                        grid.reload({
+                            request: {
+                                pageName: 'cur'
+                            }
+                        });
+                    });
+                }
+            });
+        });
+    });
+
+    function getPopFormat(flag, data) {
+        var appendStr = '';
+        return '<form class="layui-form" style="padding: 15px"> \n' +
+                '  <div class="layui-form-item" style="width: 90%">\n' +
+                '    <label class="layui-form-label">关联ID:</label>\n' +
+                '    <div class="layui-input-block">\n' +
+                '      <input type="text" disabled name="CName" required lay-verify="required" placeholder="请输入名称" autocomplete="off" class="layui-input" value="'+data.id+'">\n' +
+                '    </div>\n' +
+                '  </div>\n' +
+                '  <div class="layui-form-item" style="width: 90%">\n' +
+                '    <label class="layui-form-label">名称:</label>\n' +
+                '    <div class="layui-input-block">\n' +
+                '      <input type="text" disabled name="CName" required lay-verify="required" autocomplete="off" class="layui-input" value="'+data.CommentUserName+'">\n' +
+                '    </div>\n' +
+                '  </div>\n' +
+                '  <div class="layui-form-item" style="width: 90%">\n' +
+                '    <label class="layui-form-label">邮箱:</label>\n' +
+                '    <div class="layui-input-block">\n' +
+                '      <input type="text" disabled name="CName" required lay-verify="required" autocomplete="off" class="layui-input" value="'+data.CommentUserEmail+'">\n' +
+                '    </div>\n' +
+                '  </div>\n' +
+                '  <div class="layui-form-item" style="width: 90%">\n' +
+                '    <label class="layui-form-label">网址:</label>\n' +
+                '    <div class="layui-input-block">\n' +
+                '      <input type="text" disabled name="CName" required lay-verify="required" autocomplete="off" class="layui-input" value="'+data.CommentUserAddress+'">\n' +
+                '    </div>\n' +
+                '  </div>\n' +
+                '  <div class="layui-form-item" style="width: 90%">\n' +
+                '    <label class="layui-form-label">评论内容:</label>\n' +
+                '    <div class="layui-input-block">\n' +
+                '      <input type="text" disabled name="CName" required lay-verify="required" autocomplete="off" class="layui-input" value="'+data.CommentUserContent+'">\n' +
+                '    </div>\n' +
+                '  </div>\n' +
+                appendStr +
+                '</form>'
+    }
+</script>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">查看</a>
+</script>
