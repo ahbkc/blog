@@ -1,10 +1,11 @@
 <script src="/resource/plugins/layui/layui.js"></script>
 <script>
-    layui.use(['element', 'layer', 'laypage'], function () {
+    layui.use(['element', 'layer', 'laypage', 'util'], function () {
         var element = layui.element;
         var $ = layui.jquery;
         var layer = layui.layer;
         var laypage = layui.laypage;
+        var util = layui.util
 
         laypage.render({
             elem: 'page'
@@ -45,5 +46,15 @@
                 }, 'json')
             }
         })
+
+        //增加固定块
+          util.fixbar({
+            bar1: true
+            ,click: function(type){
+              if(type === 'bar1'){
+                window.location.href = '/about.html';
+              }
+            }
+          });
     });
 </script>
