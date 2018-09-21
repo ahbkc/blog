@@ -14,23 +14,24 @@ var validate = validator.New()
 
 //custom struct
 type Session struct {
-	Name string
-	Value string
-	LoginTime time.Time
+	Id          string
+	Name        string
+	Value       string
+	LoginTime   time.Time
 	ExpiresTime time.Time
 }
 
 type User struct {
-	Id string
-	Username string
-	Password string `json:"password"`
+	Id         string
+	Username   string
+	Password   string `json:"password"`
 	VerifyCode string `json:"verifyCode"`
-	Bio string
-	AvatarUrl string
-	State int
-	Token string
-	CreatedAt string
-	UpdatedAt string
+	Bio        string
+	AvatarUrl  string
+	State      int
+	Token      string
+	CreatedAt  string
+	UpdatedAt  string
 	Validation
 }
 
@@ -48,44 +49,44 @@ func (u *User) GetMd5Pwd() string {
 
 //general response json data
 type ResData struct {
-	Code string `json:"code"`
-	Msg string `json:"msg"`
+	Code string      `json:"code"`
+	Msg  string      `json:"msg"`
 	Data interface{} `json:"data"`
 }
 
 //table response json struct
 type TableGridResData struct {
-	Code  int                `json:"code"`
-	Msg   string             `json:"msg"`
-	Count int                `json:"count"`
+	Code  int         `json:"code"`
+	Msg   string      `json:"msg"`
+	Count int         `json:"count"`
 	Data  interface{} `json:"data"`
 }
 
 //menu struct
 type Resource struct {
-	Id string  `gorm:"primary_key" json:"Id"`
-	Name string
-	Url string
-	Class string
-	Parent int
-	State int
+	Id        string `gorm:"primary_key" json:"Id"`
+	Name      string
+	Url       string
+	Class     string
+	Parent    int
+	State     int
 	CreatedAt string
 	UpdatedAt string
-	Sort int
+	Sort      int
 }
 
 //correspond to article table
 type Article struct {
-	Id string `gorm:"primary_key" json:"id"`
-	Title string `validate:"required" json:"title"`
-	Picture string
-	Content template.HTML `validate:"required" json:"content"`
-	State int `json:"State,string"`
+	Id        string `gorm:"primary_key" json:"id"`
+	Title     string `validate:"required" json:"title"`
+	Picture   string
+	Content   template.HTML `validate:"required" json:"content"`
+	State     int           `json:"State,string"`
 	CreatedAt string
 	UpdatedAt string
 	Validation
 	CategoryId string
-	C Category
+	C          Category
 }
 
 func (a *Article) Validate1() bool {
@@ -97,13 +98,13 @@ func (a *Article) Validate1() bool {
 
 //correspond to category table
 type Category struct {
-	Id string `gorm:"primary_key" json:"Id"`   //默认为uint类型，但是数据库中存的是uuid值，所以不引入gorm.Model
-	CName string `json:"CName" validate:"required"`
-	CDescribe string `json:"CDescribe" validate:"required"`
-	CreatedAt string
-	UpdatedAt string
+	Id           string `gorm:"primary_key" json:"Id"` //默认为uint类型，但是数据库中存的是uuid值，所以不引入gorm.Model
+	CName        string `json:"CName" validate:"required"`
+	CDescribe    string `json:"CDescribe" validate:"required"`
+	CreatedAt    string
+	UpdatedAt    string
 	ArticleCount int
-	State int
+	State        int
 	Validation
 }
 
@@ -114,18 +115,17 @@ func (c *Category) Validate1() bool {
 	return true
 }
 
-
 //correspond to comment table
 type Comment struct {
-	Id string `gorm:"primary_key"json:"Id"`
-	CommentUserName string
-	CommentUserEmail string
+	Id                 string `gorm:"primary_key"json:"Id"`
+	CommentUserName    string
+	CommentUserEmail   string
 	CommentUserContent string
 	CommentUserAddress string
-	CreatedAt string
-	UpdatedAt string
-	RelevancyId string `json:"relevancyId"`
-	State int `json:"State,string"`
+	CreatedAt          string
+	UpdatedAt          string
+	RelevancyId        string `json:"relevancyId"`
+	State              int    `json:"State,string"`
 	Validation
 }
 
@@ -138,15 +138,15 @@ type Log struct {
 //correspond to article_category table
 type ArticleCategory struct {
 	gorm.Model
-	ArticleId string
+	ArticleId  string
 	CategoryId string
 }
 
 //use query data
 type Query struct {
-	Cur int `json:"cur,string" validate:"required"`
-	Limit int `json:"limit,string" validate:"required"`
-	Key string `json:"key"`
+	Cur   int    `json:"cur,string" validate:"required"`
+	Limit int    `json:"limit,string" validate:"required"`
+	Key   string `json:"key"`
 	Grid
 }
 
@@ -179,7 +179,7 @@ type Grid struct {
 
 //get pages  totalCount / limit
 func (g Grid) Pages(l int) (pages int) {
-	if g.TotalCount % l > 0 {
+	if g.TotalCount%l > 0 {
 		pages++
 	}
 	pages += g.TotalCount / l

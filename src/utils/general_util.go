@@ -32,7 +32,7 @@ var (
 	Dir          string
 	errs         error
 	ch           chan string
-	SESSN        *Session
+	SESSN        = make(map[string]*Session)
 	Method       = map[string]string{"GET": ".html", "POST": "_ajax"}
 	IdKeyD       string
 	StatikFS     http.FileSystem
@@ -181,32 +181,32 @@ func getMapVal(s string) string {
 	}
 }
 
-func NewCookie(n, v string, httpOnly bool) http.Cookie {
-	return http.Cookie{Name: n, Value: v, HttpOnly: httpOnly}
+func NewCookie(v string, httpOnly bool) http.Cookie {
+	return http.Cookie{Name: getMapVal("COOKIE_NAME"), Value: v, HttpOnly: httpOnly}
 }
 
 func RemoveCookie(n string) http.Cookie {
 	return http.Cookie{Name: n, MaxAge: -1, Expires: time.Now().AddDate(-1, 0, 0)}
 }
 
-func SetSession(n, v string, expires time.Duration, w http.ResponseWriter) {
+func SetSession(id, n, v string, expires time.Duration, w http.ResponseWriter) {
 	t := time.Now()
-	SESSN = &Session{Name: n, Value: v, LoginTime: t, ExpiresTime: t.Add(expires)}
-	c := NewCookie(n, v, true)
+	SESSN[id] = &Session{Id: id, Name: n, Value: v, LoginTime: t, ExpiresTime: t.Add(expires)}
+	c := NewCookie(id, true)
 	w.Header().Set("Set-Cookie", c.String())
 	var g sync.Once
 	go func() {
 		g.Do(func() {
 			select {
-			case <-time.After(SESSN.ExpiresTime.Sub(SESSN.LoginTime)):
-				SESSN = nil //empty
+			case <-time.After(SESSN[id].ExpiresTime.Sub(SESSN[id].LoginTime)):
+				delete(SESSN, id)
 			}
 		})
 	}()
 }
 
-func RemoveSession() http.Cookie {
-	SESSN = nil
+func RemoveSession(v string) http.Cookie {
+	delete(SESSN, v)
 	return RemoveCookie(getMapVal("COOKIE_NAME"))
 }
 
@@ -220,4 +220,14 @@ func GetUUID() string {
 //now time string value
 func GetNowTime() string {
 	return time.Now().Format("2006-01-02 15:04:05")
+}
+
+//verify login state
+func VerifyLogin(u *structs.User) bool {
+	for _, v := range SESSN {
+		if v.Name == u.Username {
+			return false
+		}
+	}
+	return true
 }

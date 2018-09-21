@@ -18,8 +18,8 @@ func AdminLoginGet(w http.ResponseWriter, r *http.Request) {
 	var tips string
 	if v, ok := m["k"]; ok && v == flag && utils.SESSN == nil {
 		tips = GetMapVal("SESSION_EXPIRES")
-		flag = ""  //once after reset
-	}else if v, ok := m["k"]; ok && v != "" {
+		flag = "" //once after reset
+	} else if v, ok := m["k"]; ok && v != "" {
 		http.Redirect(w, r, "/admin/login.html", http.StatusFound)
 		return
 	}
@@ -39,11 +39,15 @@ func AdminLoginPost(w http.ResponseWriter, r *http.Request) {
 
 	db := connect()
 	defer db.Close()
-	if e := db.Model(&temp).Where("username = ? and password = ?", u.Username, u.GetMd5Pwd()).Find(&temp).Error; e != nil || temp.ValidateVars(u.Id, "required"){
+	if e := db.Model(&temp).Where("username = ? and password = ?", u.Username, u.GetMd5Pwd()).Find(&temp).Error; e != nil || temp.ValidateVars(u.Id, "required") {
 		json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: GetMapVal("USERNAME_OR_PASSWORD_IS_INCORRECT")})
 		return
 	}
-	utils.SetSession(GetMapVal("COOKIE_NAME"), GetMapVal("TOKEN"), time.Minute * 30, w)
+	if !utils.VerifyLogin(&u) {
+		json.NewEncoder(w).Encode(structs.ResData{Code: "-99", Msg: GetMapVal("USER_ACCOUNT_HAS_BEEN_LOGGED_IN")})
+		return
+	}
+	utils.SetSession(uid(), u.Username, u.GetMd5Pwd(), time.Minute*30, w)
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("LOGIN_SUCCESS"), Data: "/admin/index.html"})
 	return
 }
@@ -65,7 +69,8 @@ func AdminIndexGet(w http.ResponseWriter, r *http.Request) {
 
 //admin logout
 func AdminLogout(w http.ResponseWriter, r *http.Request) {
-	c := utils.RemoveSession()
+	v, _ := r.Cookie(GetMapVal("COOKIE_NAME"))
+	c := utils.RemoveSession(v.Value)
 	http.SetCookie(w, &c)
 	json.NewEncoder(w).Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS"), Data: "/admin/login.html"})
 	return
