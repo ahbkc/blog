@@ -5,6 +5,7 @@
   "LOGIN_SUCCESS": "登陆后台成功",
   "LOGIN_FAILED": "登陆后台失败",
   "USERNAME_OR_PASSWORD_IS_INCORRECT": "用户名或密码错误",
+  "USER_ACCOUNT_HAS_BEEN_LOGGED_IN": "用户已登陆",
   "EXECUTION_SUCCESS": "执行成功",
   "EXECUTION_FAILED": "执行失败",
   "PAGING_PARAMETER_IS_EMPTY": "分页参数为空",
