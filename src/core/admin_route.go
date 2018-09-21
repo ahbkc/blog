@@ -16,7 +16,8 @@ func AdminLoginGet(w http.ResponseWriter, r *http.Request) {
 	var m = make(map[string]string)
 	check(json.Unmarshal(data, &m))
 	var tips string
-	if v, ok := m["k"]; ok && v == flag && utils.SESSN == nil {
+	c, _ := r.Cookie(GetMapVal("COOKIE_NAME"))
+	if v, ok := m["k"]; ok && v == flag && c != nil && utils.SESSN[c.Value] == nil {
 		tips = GetMapVal("SESSION_EXPIRES")
 		flag = "" //once after reset
 	} else if v, ok := m["k"]; ok && v != "" {
