@@ -29,8 +29,8 @@
     layui.use(['layer', 'table', 'form'], function () {
         $ = layui.jquery;
         layer = layui.layer;
-        let form = layui.form;
-        let table = layui.table;
+        var form = layui.form;
+        var table = layui.table;
         grid = table.render({
             elem: '#demo'
             , height: 500
@@ -48,6 +48,9 @@
                     field: 'State', title: '状态', width: 90, templet: function (v) {
                         return '<div><input type="checkbox" init="' + v.State + '" value="' + v.Id + '" lay-filter="switchState" ' + (v.State == 0 ? 'checked="checked"' : "") + ' lay-text="显|隐" lay-skin="switch" title="状态"></div>'
                     }, unresize: true
+                },
+                {
+                    field: 'relevancyId', hide:true
                 }
                 , {field: 'CreatedAt', title: '创建时间', sort: true}
                 , {fixed: 'right', width: 200, align: 'center', title: '操作', toolbar: '#barDemo'}
@@ -70,7 +73,7 @@
                     rEle.css('display', 'inline-block')
                     rEle.css('width', '29.8%')
                 }
-                const tp = '<div class="layui-anim layui-anim-scale" style="text-align: left;display: inline-block;width: 69.8%;">\n' +
+                var tp = '<div class="layui-anim layui-anim-scale" style="text-align: left;display: inline-block;width: 69.8%;">\n' +
                         '                    <input id="searchInput" type="text" name="title" required style="width: 90%;display: inline-block" lay-verify="required" placeholder="请输入分类名称、分类说明或id查找" autocomplete="off" class="layui-input">\n' +
                         '                    <i id="searchIcon" class="layui-icon" style="display: inline-block;cursor: pointer;font-size: 26px;position: relative;top: 5px;right: 40px">&#xe615;</i>\n' +
                         '                </div>';
@@ -224,9 +227,9 @@
         var appendStr = '';
         return '<form class="layui-form" style="padding: 15px"> \n' +
                 '  <div class="layui-form-item" style="width: 90%">\n' +
-                '    <label class="layui-form-label">关联ID:</label>\n' +
+                '    <label class="layui-form-label">ID:</label>\n' +
                 '    <div class="layui-input-block">\n' +
-                '      <input type="text" disabled name="CName" required lay-verify="required" placeholder="请输入名称" autocomplete="off" class="layui-input" value="'+data.id+'">\n' +
+                '      <input type="text" disabled name="CName" required lay-verify="required" placeholder="请输入名称" autocomplete="off" class="layui-input" value="'+data.Id+'">\n' +
                 '    </div>\n' +
                 '  </div>\n' +
                 '  <div class="layui-form-item" style="width: 90%">\n' +
@@ -245,6 +248,18 @@
                 '    <label class="layui-form-label">网址:</label>\n' +
                 '    <div class="layui-input-block">\n' +
                 '      <input type="text" disabled name="CName" required lay-verify="required" autocomplete="off" class="layui-input" value="'+data.CommentUserAddress+'">\n' +
+                '    </div>\n' +
+                '  </div>\n' +
+                '  <div class="layui-form-item" style="width: 90%">\n' +
+                '    <label class="layui-form-label">关联ID:</label>\n' +
+                '    <div class="layui-input-block">\n' +
+                '      <input type="text" disabled name="CName" required lay-verify="required" placeholder="请输入名称" autocomplete="off" class="layui-input" value="'+data.relevancyId+'">\n' +
+                '    </div>\n' +
+                '  </div>\n' +
+                '  <div class="layui-form-item" style="width: 90%">\n' +
+                '    <label class="layui-form-label">评论类型:</label>\n' +
+                '    <div class="layui-input-block">\n' +
+                '      <input type="text" disabled required lay-verify="required" autocomplete="off" class="layui-input" value="'+data.CommentUserContent+'">\n' +
                 '    </div>\n' +
                 '  </div>\n' +
                 '  <div class="layui-form-item" style="width: 90%">\n' +
