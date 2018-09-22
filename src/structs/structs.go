@@ -127,6 +127,7 @@ type Comment struct {
 	RelevancyId        string `json:"relevancyId"`
 	State              int    `json:"State,string"`
 	Validation
+	Replies []Comment
 }
 
 //correspond to log table
