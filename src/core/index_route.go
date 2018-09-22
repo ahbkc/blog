@@ -18,12 +18,12 @@ func IndexGet(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	var articles []structs.Article
-	check(db.Table("article").Where("state = ?", 0).Limit(query.GetLimit()).Offset((query.GetCur() -1) * query.Limit).Order("created_at desc").Find(&articles).Error)
+	check(db.Table("article").Where("state = ?", 0).Limit(query.GetLimit()).Offset((query.GetCur() - 1) * query.Limit).Order("created_at desc").Find(&articles).Error)
 	check(db.Table("article").Where("state = ?", 0).Count(&query.TotalCount).Error)
-	for i := 0; i != len(articles); i ++ {
+	for i := 0; i != len(articles); i++ {
 		db.Model(&articles[i]).Related(&articles[i].C)
 	}
-	t.Execute(w, ComUserRtnVal("PAGE_Count", query.Grid.Pages(query.Limit) * 10, "PAGE_Curr", query.Cur, "List", articles, "Title", "blob 首页", "Url", "index"))
+	t.Execute(w, ComUserRtnVal("PAGE_Count", query.Grid.Pages(query.Limit)*10, "PAGE_Curr", query.Cur, "List", articles, "Title", "blob 首页", "Url", "index"))
 }
 
 //detail page
@@ -48,8 +48,10 @@ func DetailPageGet(w http.ResponseWriter, r *http.Request) {
 	var comments []structs.Comment
 	check(db.Table("comment").Where("relevancy_id = ?", article.Id).Where("state = 0").Limit(query.GetLimit()).Offset((query.Cur - 1) * query.Limit).Order("created_at desc").Find(&comments).Error)
 	check(db.Table("comment").Where("relevancy_id = ?", article.Id).Where("state = 0").Count(&query.Grid.TotalCount).Error)
-
-	check(t.Execute(w, ComUserRtnVal("PAGE_Count", query.Pages(query.Limit) * 10, "PAGE_Curr", query.Cur, "Comments", comments, "Detail", article, "Title", GetMapVal("DETAIL_TITLE"), "Url", "/detail/"+article.Id, "Id", article.Id)))
+	for i := 0; i != len(comments); i++ {
+		db.Model(&structs.Comment{}).Where("relevancy_id = ?", comments[i].Id).Where("state = 0").Find(&comments[i].Replies)
+	}
+	check(t.Execute(w, ComUserRtnVal("PAGE_Count", query.Pages(query.Limit)*10, "PAGE_Curr", query.Cur, "Comments", comments, "Detail", article, "Title", GetMapVal("DETAIL_TITLE"), "Url", "/detail/"+article.Id, "Id", article.Id)))
 }
 
 //about
@@ -66,6 +68,9 @@ func GetAboutPage(w http.ResponseWriter, r *http.Request) {
 	var comments []structs.Comment
 	check(db.Table("comment").Where("relevancy_id = ?", id).Where("state = 0").Limit(query.GetLimit()).Offset((query.Cur - 1) * query.Limit).Order("created_at desc").Find(&comments).Error)
 	check(db.Table("comment").Where("relevancy_id = ?", id).Where("state = 0").Count(&query.TotalCount).Error)
+	for i := 0; i != len(comments); i++ {
+		db.Model(&structs.Comment{}).Where("relevancy_id = ?", comments[i].Id).Where("state = 0").Find(&comments[i].Replies)
+	}
 
-	t.Execute(w, ComUserRtnVal("Comments", comments, "RelevancyId", id, "PAGE_Count", query.Pages(query.Limit) * 10, "PAGE_Curr", query.Cur, "Title", GetMapVal("ABOUT_TITLE"), "Url", "about", "Id", id))
+	t.Execute(w, ComUserRtnVal("Comments", comments, "RelevancyId", id, "PAGE_Count", query.Pages(query.Limit)*10, "PAGE_Curr", query.Cur, "Title", GetMapVal("ABOUT_TITLE"), "Url", "about", "Id", id))
 }
