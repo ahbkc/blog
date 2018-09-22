@@ -35,7 +35,8 @@
                     "CommentUserContent": leaveMsg.val()
                 };
                 //提交请求
-                $.post('/comment/{{.Id}}_ajax', params, function (result) {
+                var relevanyId = $('#relevancyId').val()
+                $.post('/comment/'+relevanyId+'_ajax', params, function (result) {
                     if (result && result.code != '100') {
                         layer.msg(result.msg);
                     } else {
@@ -46,6 +47,11 @@
                 }, 'json')
             }
         })
+
+        $('.replyBtn').on('click', function () {
+            var data = $(this).attr('data-id')
+            $('#relevancyId').val(data);
+        });
 
         //增加固定块
           util.fixbar({
