@@ -2,12 +2,14 @@ package core
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"html/template"
 	"net/http"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"structs"
 	"utils"
 )
 
@@ -197,6 +199,8 @@ var routes = []Route{
 
 var flag string
 
+type ResData structs.ResData
+
 //build a router
 func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true).UseEncodedPath()
@@ -239,11 +243,7 @@ func NewRouter() *mux.Router {
 //middleware handler
 func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			if err, ok := recover().(error); ok {
-				Internal500Err(w, r.WithContext(context.WithValue(context.Background(), "exception", err))) //general inner exception handler
-			}
-		}()
+		defer errorHandle(w, r)
 		regex1, _ := regexp.Compile(`^/admin*`)
 		regex2, _ := regexp.Compile(`^/admin/login(.html|_ajax)`)
 		if strings.ToUpper(r.Method) != "GET" && strings.ToUpper(r.Method) != "POST" {
@@ -287,6 +287,18 @@ func Middleware(next http.Handler) http.Handler {
 //walkFunc
 func WalkFunc(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 	return nil
+}
+
+//error handle
+func errorHandle(w http.ResponseWriter, r *http.Request) {
+	if err, ok := recover().(error); ok {
+		if r.Method == "GET" {
+			//redirect request
+			Internal500Err(w, r.WithContext(context.WithValue(context.Background(), "exception", err))) //general inner exception handler
+		} else {
+			json.NewEncoder(w).Encode(ResData{Code: "-98", Msg: GetMapVal("AN_INTERNAL_EXCEPTION")})
+		}
+	}
 }
 
 //404 request handler
