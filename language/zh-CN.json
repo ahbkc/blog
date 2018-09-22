@@ -27,5 +27,6 @@
   "DETAIL_TITLE": "文章详情",
   "ABOUT_TITLE": "关于",
   "ADMIN_COMMENT_TITLE": "评论管理",
-  "ADMIN_RESOURCE_TITLE": "资源管理"
+  "ADMIN_RESOURCE_TITLE": "资源管理",
+  "AN_INTERNAL_EXCEPTION": "内部发生异常"
 }
