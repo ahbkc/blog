@@ -57,19 +57,36 @@ func AdminGetCommentListAjaxPOST(w http.ResponseWriter, r *http.Request) {
 
 	check(db.Model(&structs.Comment{}).Where("comment_user_name like ? or comment_user_content like ? or id like ?", "%"+query.Key+"%", "%"+query.Key+"%", "%"+query.Key+"%").Limit(query.GetLimit()).Offset((query.Cur - 1) * query.Limit).Order("created_at desc").Find(&list).Error)
 	check(db.Model(&structs.Comment{}).Where("comment_user_name like ? or comment_user_content like ? or id like ?", "%"+query.Key+"%", "%"+query.Key+"%", "%"+query.Key+"%").Count(&query.TotalCount).Error)
-	for i :=0; i != len(list); i ++ {
+	for i := 0; i != len(list); i++ {
 		list[i].CommentUserContent = template.HTMLEscapeString(list[i].CommentUserContent)
 		list[i].CommentUserName = template.HTMLEscapeString(list[i].CommentUserName)
 		list[i].CommentUserAddress = template.HTMLEscapeString(list[i].CommentUserAddress)
 		list[i].CommentUserEmail = template.HTMLEscapeString(list[i].CommentUserEmail)
 	}
-	json.NewEncoder(w).Encode(structs.TableGridResData{Code: 0, Msg: "success", Count: query.TotalCount, Data: list,})
+	json.NewEncoder(w).Encode(structs.TableGridResData{Code: 0, Msg: "success", Count: query.TotalCount, Data: list})
 	return
 }
 
 //reply comment message
 func AdminReplyCommentAjaxPOST(w http.ResponseWriter, r *http.Request) {
+	data := paramJson(r)
+	var comment, temp structs.Comment
+	check(json.Unmarshal(data, &comment))
 
+	c, _ := r.Cookie(GetMapVal("COOKIE_NAME"))
+
+	db := connect()
+	defer db.Close()
+	jsonWriter := json.NewEncoder(w)
+	if e := db.Model(&structs.Comment{}).Where("id = ?", comment.RelevancyId).Find(&temp).Error; e == nil && temp.ValidateVars(temp.Id, "required") {
+		comment.Id = uid()
+		comment.CreatedAt = utils.GetNowTime()
+		comment.CommentUserName = utils.SESSN[c.Value].Name
+		check(db.Save(&comment).Error)
+		jsonWriter.Encode(structs.ResData{Code: "100", Msg: GetMapVal("EXECUTION_SUCCESS")})
+		return
+	}
+	jsonWriter.Encode(structs.ResData{Code: "-99", Msg: GetMapVal("EXECUTION_FAILED")})
 }
 
 //disable show comment message
