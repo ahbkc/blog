@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+{{template "head_block.tmpl" .}}
+<body class="body-style">
+{{template "header_block.tmpl" .}}
+<div class="layui-main">
+    <div class="content">
+        <div class="container layui-clear">
+        {{range $x, $y := .ArticleMap}}
+            <div class="inner-container-list layui-clear">
+                <h3>#{{$x}}</h3>
+                <div class="layui-fluid layui-col-space30 layui-clear list-item">
+                {{range $i, $j := $y}}
+                    <div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
+                        <div class="item">
+                            <a href="/detail/{{$j.Id}}.html">{{$j.Title}}</a>
+                            <span class="item-time">发布于 {{$j.CreatedAt}}</span>
+                        </div>
+                    </div>
+                {{end}}
+                </div>
+            </div>
+        {{end}}
+        </div>
+    </div>
+</div>
+{{template "footer_block.tmpl"}}
+</body>
+{{template "script_block.tmpl" .}}
+</html>
