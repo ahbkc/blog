@@ -39,7 +39,7 @@ func DetailPageGet(w http.ResponseWriter, r *http.Request) {
 
 	db := connect()
 	defer db.Close()
-	db.Table("article").Where("id = ?", article.Id).Find(&article)
+	db.Table("article").Where("id = ? and state = 0", article.Id).Find(&article)
 	if article.Id == "" || article.CreatedAt == "" {
 		NotFundHandler(w, r)
 		return
@@ -73,4 +73,30 @@ func GetAboutPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	t.Execute(w, ComUserRtnVal("Comments", comments, "RelevancyId", id, "PAGE_Count", query.Pages(query.Limit)*10, "PAGE_Curr", query.Cur, "Title", GetMapVal("ABOUT_TITLE"), "Url", "about", "Id", id))
+}
+
+func ArchivePage(w http.ResponseWriter, r *http.Request) {
+	t = initTmpl("archive.html")
+
+	db := connect()
+	defer db.Close()
+	var months []string
+	check(db.Table("article").Select("strftime('%Y-%m', created_at) as month").Group("month").Pluck("month", &months).Error)
+	var articleMap = make(map[string]*[]structs.Article)
+	for _, v := range months {
+		articleMap[v] = &[]structs.Article{}
+		check(db.Table("article").Select("id, title, strftime('%Y-%m-%d', created_at) as created_at").
+			Where("created_at >= date('" + v + "-01" + "', 'start of month') and created_at <= date('" + v + "-01" + "', 'start of month', '+1 month', '-1 day')").Find(articleMap[v]).Error)
+	}
+
+	t.Execute(w, ComUserRtnVal("Title", "归档", "ArticleMap", articleMap))
+}
+
+//get the latest articles
+func getLatestArticles() {
+}
+
+//comments
+func getLatestComments() {
+
 }
