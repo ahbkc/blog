@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"html/template"
 	"net/http"
 	"path/filepath"
 	"regexp"
@@ -50,6 +49,12 @@ var routes = []Route{
 		"/about",
 		"GET",
 		GetAboutPage,
+	},
+	{
+		"archive",
+		"/archive",
+		"GET",
+		ArchivePage,
 	},
 	{
 		"comment_leave_msg",
@@ -195,6 +200,12 @@ var routes = []Route{
 		"POST",
 		AdminGetResourceListAjaxPOST,
 	},
+	{
+		"admin_comment_reply",
+		"/admin/comment/reply",
+		"POST",
+		AdminReplyCommentAjaxPOST,
+	},
 }
 
 var flag string
@@ -303,30 +314,7 @@ func errorHandle(w http.ResponseWriter, r *http.Request) {
 
 //404 request handler
 func NotFundHandler(w http.ResponseWriter, r *http.Request) {
-	var tpl = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
-    <meta name="renderer" content="webkit">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>{{.Title}}</title>
-</head>
-<body>
-<div style="width: 60%;margin: auto;padding-top: 50px;display: table">
-    <div style="width: 45%;display: table-cell;padding: 5px;vertical-align: middle">
-        <h1>Oops!</h1>
-        <h2>We can't seem to find the page you're looking for.</h2>
-        <h6>Error code: 404</h6>
-    </div>
-    <div style="width: 45%;text-align: center;display: table-cell;padding: 5px">
-        <img src="{{.ERR_404}}" width="313" height="428" alt="Girl has dropped her ice cream.">
-    </div>
-</div>
-</body>
-</html>`
-	t, _ := template.New("404").Parse(tpl)
+	t = initTmpl("404.html")
 	var data = struct {
 		Title   string
 		ERR_404 string
@@ -339,38 +327,12 @@ func NotFundHandler(w http.ResponseWriter, r *http.Request) {
 
 //500 error page
 func Internal500Err(w http.ResponseWriter, r *http.Request) {
-	var tpl = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
-    <meta name="renderer" content="webkit">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>{{.Title}}</title>
-</head>
-<body>
-<div style="width: 60%;margin: auto;padding-top: 50px;display: table">
-    <div style="width: 45%;display: table-cell;padding: 5px;vertical-align: middle">
-        <h1>Oops!</h1>
-        <h2>服务器内部错误!!!</h2>
-        <h6>Error code: 500</h6>
-{{if .DEBUG}}
-		<h5>详细信息如下：</h5>
-		<p>{{.ErrorMsg}}</p>
-{{end}}
-    </div>
-    <div style="width: 45%;text-align: center;display: table-cell;padding: 5px">
-    </div>
-</div>
-</body>
-</html>`
+	t = initTmpl("500.html")
 	var model = GetMapVal("ENVIRONMENT") == "DEVELOP"
 	var data = map[string]interface{}{"Title": "500 page", "DEBUG": model}
 	if v, ok := r.Context().Value("exception").(error); ok {
 		data["ErrorMsg"] = v.Error()
 	}
-	t, _ := template.New("500").Parse(tpl)
 	t.Execute(w, data)
 }
 
