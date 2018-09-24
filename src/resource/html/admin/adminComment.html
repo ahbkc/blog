@@ -129,9 +129,32 @@
                     });
                 });
             } else if (layEvent === 'reply') {
-                layer.prompt({title: '输入回复内容', formType: 1}, function(text, index){
-                    layer.close(index);
-                    layer.msg(text);
+                layer.prompt({title: '输入回复内容', formType: 2}, function(text, index){
+                    $.ajax({
+                        type: 'POST',
+                        url: '/admin/comment/reply_ajax',
+                        data: {relevancyId: data.Id, CommentUserContent: text},
+                        contentType: 'application/x-www-form-urlencoded',
+                        dataType: 'json',
+                        async: true,
+                        success: function (result, textStatus) {
+                            if (result.code != 100) {
+                                layer.msg(result.msg)
+                            } else if (result.code == 100) {
+                                layer.close(index);
+                                layer.msg(result.msg, {time: 1500}, function () {
+                                    grid.reload({
+                                        request: {
+                                            pageName: 'cur'
+                                        }
+                                    });
+                                });
+                            }
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            layer.msg('{{.AJAX_ERROR_TIPS_MESSAGE}}')
+                        }
+                    });
                 });
             } else if (layEvent === 'disable') {
                 layer.confirm('确定要隐藏该评论吗 ?', function (index) {
