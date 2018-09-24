@@ -2,65 +2,30 @@
 <script>
     layui.use(['element', 'layer', 'laypage', 'util'], function () {
         var element = layui.element;
-        var $ = layui.jquery;
-        var layer = layui.layer;
+        var util = layui.util;
         var laypage = layui.laypage;
-        var util = layui.util
 
+    {{if .PAGE_Count}}
         laypage.render({
             elem: 'page'
-            ,count: {{.PAGE_Count}}
-            ,curr: {{.PAGE_Curr}}
-            ,jump: function(obj, first){
-                if(!first){
-                    window.location.href = "{{.Url}}.html?cur="+ obj.curr;  //分页跳转
+            , count: {{.PAGE_Count}}
+            , curr: {{.PAGE_Curr}}
+            , jump: function (obj, first) {
+                if (!first) {
+                    window.location.href = "{{.Url}}.html?cur=" + obj.curr;  //分页跳转
                 }
             }
         });
-
-        //响应点击提交操作
-        $("#submit").on("click", function () {
-            var name = $("#name");
-            var mail = $("#mail");
-            var address = $("#address");
-            var leaveMsg = $("#leaveMsg");
-
-            if ((name === undefined || name.val() == '') || (mail === undefined || mail.val() == '') || (address === null || address.val() == '') || (leaveMsg === undefined || leaveMsg.val() == '')) {
-                layer.msg('请输入姓名、邮箱、网址、评论内容!');
-            } else {
-                var params = {
-                    "CommentUserName": name.val(),
-                    "CommentUserEmail": mail.val(),
-                    "CommentUserAddress": address.val(),
-                    "CommentUserContent": leaveMsg.val()
-                };
-                //提交请求
-                var relevanyId = $('#relevancyId').val()
-                $.post('/comment/'+relevanyId+'_ajax', params, function (result) {
-                    if (result && result.code != '100') {
-                        layer.msg(result.msg);
-                    } else {
-                        layer.msg(result.msg, {time: 1500}, function () {
-                            window.location.reload(); //重加载当前页
-                        })
-                    }
-                }, 'json')
-            }
-        })
-
-        $('.replyBtn').on('click', function () {
-            var data = $(this).attr('data-id')
-            $('#relevancyId').val(data);
-        });
+    {{end}}
 
         //增加固定块
-          util.fixbar({
+        util.fixbar({
             bar1: true
-            ,click: function(type){
-              if(type === 'bar1'){
-                window.location.href = '/about.html';
-              }
+            , click: function (type) {
+                if (type === 'bar1') {
+                    window.location.href = '/about.html';
+                }
             }
-          });
+        });
     });
 </script>

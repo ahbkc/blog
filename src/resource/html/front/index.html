@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 {{template "head_block.tmpl" .}}
-<body style="background-color: #f7f7f7!important;overflow-x: hidden;">
+<body class="body-style">
 {{template "header_block.tmpl" .}}
 <div class="layui-main">
     <div class="layui-fluid layui-col-space30 layui-clear">
@@ -29,9 +29,10 @@
     {{end}}
     </div>
 {{if gt .PAGE_Count 10}}
-    <div id="page"></div>
+    <div id="page" style="text-align: center"></div>
 {{end}}
 </div>
+{{template "footer_block.tmpl"}}
 {{template "script_block.tmpl" .}}
 </body>
 </html>

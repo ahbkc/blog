@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 {{template "head_block.tmpl" .}}
-<body style="background-color: #f7f7f7!important;overflow-x: hidden;">
+<body class="body-style">
 {{template "header_block.tmpl" .}}
 <div class="layui-main">
     <div class="content">
@@ -14,6 +14,7 @@
     </div>
 {{template "inner_comment_block.tmpl" .}}
 </div>
+{{template "footer_block.tmpl"}}
 </body>
 {{template "script_block.tmpl" .}}
 </html>

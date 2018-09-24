@@ -59,5 +59,48 @@
     </div>
 </div>
 {{if gt .PAGE_Count 10}}
-<div id="page"></div>
+<div id="page" style="text-align: center"></div>
 {{end}}
+<script src="/resource/plugins/layui/layui.js"></script>
+<script>
+    layui.use(['element', 'layer', 'laypage', 'util'], function () {
+        var element = layui.element;
+        var $ = layui.jquery;
+        var layer = layui.layer;
+
+        //响应点击提交操作
+        $("#submit").on("click", function () {
+            var name = $("#name");
+            var mail = $("#mail");
+            var address = $("#address");
+            var leaveMsg = $("#leaveMsg");
+
+            if ((name === undefined || name.val() == '') || (mail === undefined || mail.val() == '') || (address === null || address.val() == '') || (leaveMsg === undefined || leaveMsg.val() == '')) {
+                layer.msg('请输入姓名、邮箱、网址、评论内容!');
+            } else {
+                var params = {
+                    "CommentUserName": name.val(),
+                    "CommentUserEmail": mail.val(),
+                    "CommentUserAddress": address.val(),
+                    "CommentUserContent": leaveMsg.val()
+                };
+                //提交请求
+                var relevanyId = $('#relevancyId').val()
+                $.post('/comment/'+relevanyId+'_ajax', params, function (result) {
+                    if (result && result.code != '100') {
+                        layer.msg(result.msg);
+                    } else {
+                        layer.msg(result.msg, {time: 1500}, function () {
+                            window.location.reload(); //重加载当前页
+                        })
+                    }
+                }, 'json')
+            }
+        })
+
+        $('.replyBtn').on('click', function () {
+            var data = $(this).attr('data-id')
+            $('#relevancyId').val(data);
+        });
+    });
+</script>
