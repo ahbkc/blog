@@ -1,29 +1,17 @@
 package utils
 
 import (
-	"testing"
-	"fmt"
 	"image"
 	"image/color"
-	"os"
 	"image/png"
+	"os"
 	"regexp"
+	"testing"
 )
 
-func TestCutString(t *testing.T) {
-	param := "/qwe/afasf"
-	sep := "/"
-	result, err := CutString(param, sep, 2, 0)
-	if err != nil {
-		t.Error(err)
-	}
-	fmt.Println(result)
-}
-
-func TestRandNum(t *testing.T) {
-	for i := 0; i < 20; i ++ {
-		t.Log(GetRandCode())
-	}
+type PathRegex struct {
+	Regex string
+	Path  []string
 }
 
 func TestCreatePng(t *testing.T) {
@@ -62,15 +50,19 @@ func TestUint8(t *testing.T) {
 	t.Log(uint8((1 + 2) << 2 & 255))
 }
 
+var paths = []PathRegex{
+	{`^Admin*`, []string{"AdminIndexGet", "adminIndexGet"}},
+	{`^/admin/[^login]`, []string{"/admin/login", "/admin/index", "/admin/category/index"}},
+}
+
 //admin path regexp
 func TestPathRegexp(t *testing.T) {
-	r, err := regexp.Compile(`^Admin*`)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var array = []string{"AdminIndexGet", "adminIndexGet"}
-	for _, v := range array {
-		str := r.FindString(v)
-		fmt.Println(str)
+	r := &regexp.Regexp{}
+	for _, v := range paths {
+		r = regexp.MustCompile(v.Regex)
+		for _, k := range v.Path {
+			l := r.MatchString(k)
+			t.Logf("regex: %s, data: %s, result: %v\n", v.Regex, k, l)
+		}
 	}
 }
