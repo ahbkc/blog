@@ -91,12 +91,3 @@ func ArchivePage(w http.ResponseWriter, r *http.Request) {
 
 	t.Execute(w, ComUserRtnVal("Title", "归档", "ArticleMap", articleMap))
 }
-
-//get the latest articles
-func getLatestArticles() {
-}
-
-//comments
-func getLatestComments() {
-
-}
