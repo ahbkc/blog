@@ -134,7 +134,6 @@ func GetCoon() (db *gorm.DB) {
 	db, err := gorm.Open(getMapVal("dialect"), Dir+getMapVal("db_path"))
 	CheckErr(err)
 	db.SingularTable(true)
-	db.LogMode(true)
 	return
 }
 
