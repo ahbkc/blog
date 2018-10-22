@@ -3,21 +3,25 @@
         <div style="width: 50%;margin-left: auto;margin-right: auto;padding-top: 50px">
             <div class="layui-fluid layui-col-space30 layui-clear">
                 <div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
-                    <div><img src="/img/avatar.png" /> </div>
+                    <div><img src="/img/avatar.png"/></div>
                     <p>面朝大海, 春暖花开</p>
                     <p>© 2018 ahbkc</p>
                 </div>
                 <div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
                     <h3 style="padding-bottom: 20px">最新文章</h3>
-                    <p class="footer-text">最近的事</p>
-                    <p class="footer-text">最近的事</p>
-                    <p class="footer-text">最近的事</p>
-                    <p class="footer-text">最近的事</p>
+                {{range $x, $y := .LatestArticles}}
+                    <a href="/detail/{{$y.Id}}.html"><p class="footer-text">{{$y.Title}}</p></a>
+                {{else}}
+                    {{"<span>暂无最新文章</span>"}}
+                            {{end}}
                 </div>
                 <div class="layui-col-xs6 layui-col-sm6 layui-col-md4">
                     <h3 style="padding-bottom: 20px">最新评论</h3>
-                    <p class="footer-text">小明：啦啦</p>
-                    <p class="footer-text">小明：啦啦</p>
+                {{range $x, $y := .LatestComments}}
+                    <p class="footer-text">{{$y.CommentUserName  | html}}：{{$y.CommentUserContent | html}}</p>
+                {{else}}
+                    {{"<span>暂无最新评论</span>"}}
+                            {{end}}
                 </div>
             </div>
         </div>
