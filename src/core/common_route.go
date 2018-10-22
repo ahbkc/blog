@@ -7,24 +7,25 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"structs"
 	"text/template"
 	"utils"
 )
 
 var (
-	ADMRtnMap =  map[string]interface{}{"JsLoginErrMsg": GetMapVal("LOGIN_FAILED"), "ConsoleName": GetMapVal("ADMIN_INDEX_CONSOLE_NAME"),
-"AjaxErrorMsg": GetMapVal("AJAX_ERROR_TIPS_MESSAGE"), "Welcome": GetMapVal("ADMIN_FOOTER_MESSAGE"),
-"ConfirmLogoutTips": GetMapVal("CONFIRM_LOGOUT_TIPS"), "LogoutName": GetMapVal("ADMIN_INDEX_LOGOUT_NAME"),
-	"UserName": "ahbkc"}
+	ADMRtnMap = map[string]interface{}{"JsLoginErrMsg": GetMapVal("LOGIN_FAILED"), "ConsoleName": GetMapVal("ADMIN_INDEX_CONSOLE_NAME"),
+		"AjaxErrorMsg": GetMapVal("AJAX_ERROR_TIPS_MESSAGE"), "Welcome": GetMapVal("ADMIN_FOOTER_MESSAGE"),
+		"ConfirmLogoutTips": GetMapVal("CONFIRM_LOGOUT_TIPS"), "LogoutName": GetMapVal("ADMIN_INDEX_LOGOUT_NAME"),
+		"UserName": "ahbkc"}
 	UserRtnMap = make(map[string]interface{})
-	t *template.Template
-	err error
-	connect = utils.GetCoon
-	check = utils.CheckErr
-	paramJson = utils.ParamJson
-	buf = &bytes.Buffer{}
-	uid = utils.GetUUID
-	nowTime = utils.GetNowTime
+	t          *template.Template
+	err        error
+	connect    = utils.GetCoon
+	check      = utils.CheckErr
+	paramJson  = utils.ParamJson
+	buf        = &bytes.Buffer{}
+	uid        = utils.GetUUID
+	nowTime    = utils.GetNowTime
 )
 
 //初始化template
@@ -49,7 +50,7 @@ func initTmpl(n string) (tpl *template.Template) {
 
 //add a admin page share to return map
 func ComADMRtnVal(s ...interface{}) (m map[string]interface{}) {
-	for i := 0; i != len(s); i +=2 {
+	for i := 0; i != len(s); i += 2 {
 		name := s[i].(string) //如果不是string 类型，则会发生强转失败，导致抛出异常
 		ADMRtnMap[name] = s[i+1]
 	}
@@ -58,10 +59,12 @@ func ComADMRtnVal(s ...interface{}) (m map[string]interface{}) {
 
 //add a front end page share to return map
 func ComUserRtnVal(s ...interface{}) (m map[string]interface{}) {
-	for i := 0; i != len(s); i +=2 {
+	for i := 0; i != len(s); i += 2 {
 		name := s[i].(string) //如果不是string 类型，则会发生强转失败，导致抛出异常
 		UserRtnMap[name] = s[i+1]
 	}
+	UserRtnMap["LatestComments"] = getLatestComments()
+	UserRtnMap["LatestArticles"] = getLatestArticles()
 	return UserRtnMap
 }
 
@@ -88,4 +91,24 @@ func VerifyCodeGenerate(w http.ResponseWriter, r *http.Request) {
 	var capD base64Captcha.CaptchaInterface
 	utils.IdKeyD, capD = base64Captcha.GenerateCaptcha("", config)
 	capD.WriteTo(w) //write to response
+}
+
+//get the latest articles  five count
+func getLatestArticles() []structs.Article {
+	db := connect()
+	defer db.Close()
+
+	var list []structs.Article
+	check(db.Table("article").Select("id, title, picture, content, state, strftime('%Y-%m-%d %H:%M:%S', created_at) as created_at, strftime('%Y-%m-%d %H:%M:%S', updated_at) as updated_at, category_id").Limit(5).Offset(0).Order("created_at desc").Find(&list).Error)
+	return list
+}
+
+//comments
+func getLatestComments() []structs.Comment {
+	db := connect()
+	defer db.Close()
+
+	var list []structs.Comment
+	check(db.Model(&structs.Comment{}).Offset(0).Limit(5).Order("created_at desc").Find(&list).Error)
+	return list
 }
